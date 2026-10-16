@@ -27,7 +27,7 @@
     h1 { margin: 0; color: var(--primary); font-size: 1.6rem; }
     p.subtitle { margin: 4px 0 12px; font-size: 0.85rem; opacity: 0.8; }
 
-    /* Top Main App Navigation Tabs */
+    /* Top Navigation Switcher */
     .app-nav {
       display: flex;
       justify-content: center;
@@ -52,7 +52,7 @@
       color: white;
     }
 
-    /* Action Buttons */
+    /* Actions */
     .top-actions {
       display: flex;
       justify-content: center;
@@ -166,7 +166,7 @@
     }
     .edit-mode #addEventBtn { display: block; }
 
-    /* Grocery List Styles */
+    /* Grocery Styles */
     .grocery-input-group {
       display: flex;
       gap: 6px;
@@ -212,18 +212,18 @@
     <h1>Adelaide Trip 2026</h1>
     <p class="subtitle">8 Nov - 16 Nov | Family Companion App</p>
     
-    <!-- Top View Switcher -->
+    <!-- Navigation Switcher -->
     <div class="app-nav">
       <button class="app-nav-btn active" id="navItineraryBtn" onclick="showView('itinerary')">📅 Itinerary</button>
       <button class="app-nav-btn" id="navGroceryBtn" onclick="showView('grocery')">🛒 Grocery List</button>
     </div>
   </header>
 
-  <!-- ================= VIEW 1: ITINERARY ================= -->
+  <!-- ================= ITINERARY VIEW ================= -->
   <div id="itinerarySection">
     <div class="top-actions">
       <button class="btn btn-edit" id="toggleEditBtn" onclick="toggleEditMode()">✏️ Edit Itinerary</button>
-      <button class="btn btn-reset" onclick="resetToDefault()">🔄 Reset Default</button>
+      <button class="btn btn-reset" onclick="resetToDefault()">🔄 Reset to Latest Schedule</button>
     </div>
 
     <div class="nav-tabs" id="dayTabs"></div>
@@ -233,7 +233,7 @@
     <div id="dayContent"></div>
   </div>
 
-  <!-- ================= VIEW 2: GROCERY LIST ================= -->
+  <!-- ================= GROCERY VIEW ================= -->
   <div id="grocerySection" style="display: none; max-width: 500px; margin: 0 auto;">
     <div class="grocery-input-group">
       <input type="text" id="newItemInput" placeholder="Add item (e.g., Oat Milk)..." style="flex: 1;">
@@ -257,7 +257,15 @@
   </div>
 
   <script>
-    // ------------------- VIEW SWITCHER -------------------
+    // AUTOMATIC CACHE KEY (Line 167)
+    const CURRENT_VERSION = "v4_restaurant_dinners";
+
+    if (localStorage.getItem('adelaide_app_version') !== CURRENT_VERSION) {
+      localStorage.removeItem('adelaide_itinerary');
+      localStorage.setItem('adelaide_app_version', CURRENT_VERSION);
+    }
+
+    // View Switcher
     function showView(view) {
       document.getElementById('itinerarySection').style.display = view === 'itinerary' ? 'block' : 'none';
       document.getElementById('grocerySection').style.display = view === 'grocery' ? 'block' : 'none';
@@ -266,13 +274,13 @@
       document.getElementById('navGroceryBtn').classList.toggle('active', view === 'grocery');
     }
 
-    // ------------------- ITINERARY DATA & LOGIC -------------------
+    // Default 9-Day Itinerary
     const defaultItinerary = [
       {
         date: "Nov 8 (Sun)",
         events: [
           { id: 1, time: "Morning / Afternoon", type: "Arrival", tag: "tag-arrival", title: "Arrive in Adelaide", desc: "Settle into home, unpack, let baby explore the space." },
-          { id: 2, time: "7:00 PM", type: "Dinner", tag: "tag-evening", title: "Welcome Dinner at Home", desc: "Casual family meal cooked at brother's home." }
+          { id: 2, time: "7:00 PM", type: "Dinner", tag: "tag-evening", title: "Welcome Home Dinner", desc: "Casual family meal cooked at home." }
         ]
       },
       {
@@ -280,15 +288,15 @@
         events: [
           { id: 3, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Botanic Garden", desc: "Pram-friendly walk & open lawn play for baby.", map: "https://maps.google.com/?q=Adelaide+Botanic+Garden" },
           { id: 4, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Peter Rabbit Cafe", desc: "Garden cafe with real bunnies.", map: "https://maps.google.com/?q=Peter+Rabbit+Adelaide" },
-          { id: 5, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Rest time after a day out." }
+          { id: 5, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Relaxed family meal at home." }
         ]
       },
       {
         date: "Nov 10 (Tue)",
         events: [
-          { id: 6, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Zoo", desc: "Visit Nature's Playground & see animals.", map: "https://maps.google.com/?q=Adelaide+Zoo" },
-          { id: 7, time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "iTL Italian Kitchen", desc: "Spacious pasta & wood-fired pizza spot.", map: "https://maps.google.com/?q=iTL+Italian+Kitchen+Adelaide" },
-          { id: 8, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Fresh produce run from Central Market." }
+          { id: 6, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Zoo", desc: "Nature's Playground & giant pandas.", map: "https://maps.google.com/?q=Adelaide+Zoo" },
+          { id: 7, time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "Central Market Food Stalls", desc: "Explore local food stalls & fresh produce.", map: "https://maps.google.com/?q=Adelaide+Central+Market" },
+          { id: 8, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "iTL Italian Kitchen (CBD)", desc: "Wood-fired pizzas & pasta in a spacious venue.", map: "https://maps.google.com/?q=iTL+Italian+Kitchen+Adelaide" }
         ]
       },
       {
@@ -296,46 +304,46 @@
         events: [
           { id: 9, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Cleland Wildlife Park", desc: "Feed kangaroos up close in Adelaide Hills.", map: "https://maps.google.com/?q=Cleland+Wildlife+Park" },
           { id: 10, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Grünthal Brew (Hahndorf)", desc: "Spacious lawn dining for the family.", map: "https://maps.google.com/?q=Grunthal+Brew" },
-          { id: 11, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Relaxing evening at home." }
+          { id: 11, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Rest time after Adelaide Hills day." }
         ]
       },
       {
         date: "Nov 12 (Thu)",
         events: [
-          { id: 12, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Monarto Safari Park", desc: "Open-range safari bus ride, giraffes & chimps.", map: "https://maps.google.com/?q=Monarto+Safari+Park" },
-          { id: 13, time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "Monarto Visitor Centre Cafe", desc: "Family-friendly cafe overlooking the park entry.", map: "https://maps.google.com/?q=Monarto+Safari+Park" },
-          { id: 14, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Rest time after safari day." }
+          { id: 12, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Monarto Safari Park", desc: "Open-range safari bus, giraffes & chimps.", map: "https://maps.google.com/?q=Monarto+Safari+Park" },
+          { id: 13, time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "Monarto Visitor Centre Cafe", desc: "Family-friendly cafe at safari entrance.", map: "https://maps.google.com/?q=Monarto+Safari+Park" },
+          { id: 14, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "The Rezz (Newton)", desc: "Dinner with dedicated toddler indoor soft play area.", map: "https://maps.google.com/?q=The+Rezz+Newton" }
         ]
       },
       {
         date: "Nov 13 (Fri)",
         events: [
-          { id: 15, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Tusmore Park Wading Pool", desc: "Shaded playground & ankle-deep toddler pool.", map: "https://maps.google.com/?q=Tusmore+Park" },
-          { id: 16, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "The Rezz (Newton)", desc: "Great food with dedicated indoor/outdoor toddler play areas.", map: "https://maps.google.com/?q=The+Rezz+Newton" },
-          { id: 17, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Casual family cooking at home." }
+          { id: 15, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Tusmore Park Wading Pool", desc: "Shaded playground & shallow wading pool.", map: "https://maps.google.com/?q=Tusmore+Park" },
+          { id: 16, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Norwood Parade Cafe", desc: "Relaxed outdoor cafe dining.", map: "https://maps.google.com/?q=Norwood+Parade+Adelaide" },
+          { id: 17, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Tony Tomatoes (North Adelaide)", desc: "High-vibe, family-loved Italian pizzeria.", map: "https://maps.google.com/?q=Tony+Tomatoes+North+Adelaide" }
         ]
       },
       {
         date: "Nov 14 (Sat)",
         events: [
-          { id: 18, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "McLaren Vale Scenic Drive", desc: "Beautiful vine landscapes and coastline views.", map: "https://maps.google.com/?q=McLaren+Vale" },
-          { id: 19, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Beach Road Wines", desc: "Wood-fired pizzas & big grassy lawns for toddler to roam.", map: "https://maps.google.com/?q=Beach+Road+Wines" },
-          { id: 20, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Home-cooked meal after winery trip." }
+          { id: 18, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "McLaren Vale Scenic Drive", desc: "Vineyards and coast drive.", map: "https://maps.google.com/?q=McLaren+Vale" },
+          { id: 19, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Beach Road Wines", desc: "Pizzas & grassy lawns for toddler play.", map: "https://maps.google.com/?q=Beach+Road+Wines" },
+          { id: 20, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Relaxing meal at home after winery trip." }
         ]
       },
       {
         date: "Nov 15 (Sun)",
         events: [
-          { id: 21, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Glenelg Foreshore & Beach", desc: "Fenced foreshore playground on the sand & coastal boardwalk.", map: "https://maps.google.com/?q=Glenelg+Beach" },
-          { id: 22, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Henley House (Henley Beach)", desc: "Relaxed beachside lunch with wide ramp access.", map: "https://maps.google.com/?q=Henley+House+Henley+Beach" },
-          { id: 23, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Farewell Home Dinner", desc: "Final family dinner & packing prep." }
+          { id: 21, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Glenelg Foreshore & Beach", desc: "Fenced foreshore playground on the sand.", map: "https://maps.google.com/?q=Glenelg+Beach" },
+          { id: 22, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Moseley Square Cafe", desc: "Beachside lunch with ocean views.", map: "https://maps.google.com/?q=Moseley+Square+Glenelg" },
+          { id: 23, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Henley House / Estia (Henley Beach)", desc: "Farewell coastal sunset dinner.", map: "https://maps.google.com/?q=Henley+House+Henley+Beach" }
         ]
       },
       {
         date: "Nov 16 (Mon)",
         events: [
           { id: 24, time: "Morning", type: "Activity", tag: "tag-morning", title: "Final Morning Coffee & Departure", desc: "Pack up, return rental car, head to Adelaide Airport." },
-          { id: 25, time: "12:00 PM", type: "Lunch", tag: "tag-lunch", title: "Airport Lunch & Flight Home", desc: "Safe travel back home!" }
+          { id: 25, time: "12:00 PM", type: "Lunch", tag: "tag-lunch", title: "Airport Lunch & Flight Home", desc: "Safe flight back home!" }
         ]
       }
     ];
@@ -446,14 +454,14 @@
     }
 
     function resetToDefault() {
-      if (confirm("Reset itinerary back to original defaults?")) {
+      if (confirm("Reset itinerary back to the latest schedule?")) {
         itinerary = JSON.parse(JSON.stringify(defaultItinerary));
         saveToLocalStorage();
         selectDay(0);
       }
     }
 
-    // ------------------- GROCERY LIST DATA & LOGIC -------------------
+    // Grocery List Data & Logic
     let groceryItems = JSON.parse(localStorage.getItem('adelaide_groceries')) || [
       { id: 1, name: "Full Cream Milk (Baby)", category: "Breakfast", bought: false },
       { id: 2, name: "Eggs (12-pack)", category: "Breakfast", bought: false },
