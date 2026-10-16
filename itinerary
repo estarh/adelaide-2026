@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adelaide Family Trip 2026</title>
+  <style>
+    :root {
+      --primary: #2C5E3B;
+      --accent: #E07A5F;
+      --bg: #F4F1DE;
+      --card-bg: #FFFFFF;
+      --text: #3D405B;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 16px;
+    }
+    header {
+      text-align: center;
+      padding: 12px 0;
+    }
+    h1 { margin: 0; color: var(--primary); font-size: 1.6rem; }
+    p.subtitle { margin: 4px 0 16px; font-size: 0.9rem; opacity: 0.8; }
+    
+    .nav-tabs {
+      display: flex;
+      overflow-x: auto;
+      gap: 8px;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      background: var(--card-bg);
+      border: 1px solid #ccc;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+    .tag {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .tag-morning { background: #E8F5E9; color: #2E7D32; }
+    .tag-lunch { background: #FFF3E0; color: #E65100; }
+    .tag-evening { background: #EDE7F6; color: #512DA8; }
+
+    .map-btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 12px;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Adelaide Trip 2026</h1>
+    <p class="subtitle">8 Nov - 16 Nov | Family Itinerary</p>
+  </header>
+
+  <!-- Day Selector -->
+  <div class="nav-tabs" id="dayTabs"></div>
+
+  <!-- Content Display -->
+  <div id="dayContent"></div>
+
+  <script>
+    const itinerary = [
+      {
+        date: "Nov 8 (Sun)",
+        events: [
+          { time: "Morning / Afternoon", type: "Arrival", tag: "tag-morning", title: "Arrive in Adelaide", desc: "Settle into home, unpack, let baby explore the space." },
+          { time: "7:00 PM", type: "Dinner", tag: "tag-evening", title: "Welcome Dinner at Home", desc: "Casual family meal cooked at brother's home." }
+        ]
+      },
+      {
+        date: "Nov 9 (Mon)",
+        events: [
+          { time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Botanic Garden", desc: "Pram-friendly walk & open lawn play for baby.", map: "https://maps.google.com/?q=Adelaide+Botanic+Garden" },
+          { time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Peter Rabbit Cafe", desc: "Garden cafe with real bunnies.", map: "https://maps.google.com/?q=Peter+Rabbit+Adelaide" },
+          { time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Rest time after a day out." }
+        ]
+      },
+      {
+        date: "Nov 10 (Tue)",
+        events: [
+          { time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Zoo", desc: "Visit Nature's Playground & see animals.", map: "https://maps.google.com/?q=Adelaide+Zoo" },
+          { time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "iTL Italian Kitchen", desc: "Spacious pasta & wood-fired pizza spot.", map: "https://maps.google.com/?q=iTL+Italian+Kitchen+Adelaide" },
+          { time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Fresh produce from Central Market." }
+        ]
+      },
+      {
+        date: "Nov 11 (Wed)",
+        events: [
+          { time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Cleland Wildlife Park", desc: "Feed kangaroos up close in Adelaide Hills.", map: "https://maps.google.com/?q=Cleland+Wildlife+Park" },
+          { time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Grünthal Brew (Hahndorf)", desc: "Spacious lawn dining for the family.", map: "https://maps.google.com/?q=Grunthal+Brew" },
+          { time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Relaxing evening at home." }
+        ]
+      }
+    ];
+
+    function renderTabs() {
+      const tabsContainer = document.getElementById('dayTabs');
+      itinerary.forEach((item, index) => {
+        const btn = document.createElement('button');
+        btn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
+        btn.innerText = item.date;
+        btn.onclick = () => selectDay(index);
+        tabsContainer.appendChild(btn);
+      });
+    }
+
+    function selectDay(index) {
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+
+      const contentContainer = document.getElementById('dayContent');
+      contentContainer.innerHTML = '';
+
+      itinerary[index].events.forEach(evt => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <strong>${evt.time}</strong>
+            <span class="tag ${evt.tag}">${evt.type}</span>
+          </div>
+          <h3 style="margin:4px 0;">${evt.title}</h3>
+          <p style="margin:4px 0; font-size:0.9rem;">${evt.desc}</p>
+          ${evt.map ? `<a href="${evt.map}" target="_blank" class="map-btn">Open in Maps 📍</a>` : ''}
+        `;
+        contentContainer.appendChild(card);
+      });
+    }
+
+    // Initialize
+    renderTabs();
+    selectDay(0);
+  </script>
+</body>
+</html>
