@@ -22,16 +22,37 @@
     header {
       text-align: center;
       padding: 12px 0;
+      position: relative;
     }
     h1 { margin: 0; color: var(--primary); font-size: 1.6rem; }
-    p.subtitle { margin: 4px 0 16px; font-size: 0.9rem; opacity: 0.8; }
-    
+    p.subtitle { margin: 4px 0 12px; font-size: 0.9rem; opacity: 0.8; }
+
+    .top-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn-edit { background: var(--accent); }
+    .btn-reset { background: #888; }
+
     .nav-tabs {
       display: flex;
       overflow-x: auto;
       gap: 8px;
       padding-bottom: 8px;
       margin-bottom: 16px;
+      -webkit-overflow-scrolling: touch;
     }
     .tab-btn {
       background: var(--card-bg);
@@ -54,6 +75,7 @@
       padding: 16px;
       margin-bottom: 12px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      position: relative;
     }
     .card-header {
       display: flex;
@@ -73,6 +95,7 @@
     .tag-morning { background: #E8F5E9; color: #2E7D32; }
     .tag-lunch { background: #FFF3E0; color: #E65100; }
     .tag-evening { background: #EDE7F6; color: #512DA8; }
+    .tag-arrival { background: #E1F5FE; color: #0288D1; }
 
     .map-btn {
       display: inline-block;
@@ -85,6 +108,36 @@
       font-size: 0.85rem;
       font-weight: bold;
     }
+
+    .card-actions {
+      display: none;
+      margin-top: 10px;
+      gap: 8px;
+    }
+    .edit-mode .card-actions { display: flex; }
+    .btn-card {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-delete { background: #d32f2f; color: white; }
+    .btn-card-edit { background: #1976d2; color: white; }
+
+    #addEventBtn {
+      display: none;
+      width: 100%;
+      background: #388e3c;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .edit-mode #addEventBtn { display: block; }
   </style>
 </head>
 <body>
@@ -92,54 +145,106 @@
   <header>
     <h1>Adelaide Trip 2026</h1>
     <p class="subtitle">8 Nov - 16 Nov | Family Itinerary</p>
+    <div class="top-actions">
+      <button class="btn btn-edit" id="toggleEditBtn" onclick="toggleEditMode()">✏️ Edit Itinerary</button>
+      <button class="btn btn-reset" onclick="resetToDefault()">🔄 Reset Default</button>
+    </div>
   </header>
 
-  <!-- Day Selector -->
   <div class="nav-tabs" id="dayTabs"></div>
 
-  <!-- Content Display -->
+  <button id="addEventBtn" onclick="addNewEvent()">+ Add Activity / Meal to this Day</button>
+
   <div id="dayContent"></div>
 
   <script>
-    const itinerary = [
+    const defaultItinerary = [
       {
         date: "Nov 8 (Sun)",
         events: [
-          { time: "Morning / Afternoon", type: "Arrival", tag: "tag-morning", title: "Arrive in Adelaide", desc: "Settle into home, unpack, let baby explore the space." },
-          { time: "7:00 PM", type: "Dinner", tag: "tag-evening", title: "Welcome Dinner at Home", desc: "Casual family meal cooked at brother's home." }
+          { id: 1, time: "Morning / Afternoon", type: "Arrival", tag: "tag-arrival", title: "Arrive in Adelaide", desc: "Settle into home, unpack, let baby explore the space." },
+          { id: 2, time: "7:00 PM", type: "Dinner", tag: "tag-evening", title: "Welcome Dinner at Home", desc: "Casual family meal cooked at brother's home." }
         ]
       },
       {
         date: "Nov 9 (Mon)",
         events: [
-          { time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Botanic Garden", desc: "Pram-friendly walk & open lawn play for baby.", map: "https://maps.google.com/?q=Adelaide+Botanic+Garden" },
-          { time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Peter Rabbit Cafe", desc: "Garden cafe with real bunnies.", map: "https://maps.google.com/?q=Peter+Rabbit+Adelaide" },
-          { time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Rest time after a day out." }
+          { id: 3, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Botanic Garden", desc: "Pram-friendly walk & open lawn play for baby.", map: "https://maps.google.com/?q=Adelaide+Botanic+Garden" },
+          { id: 4, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Peter Rabbit Cafe", desc: "Garden cafe with real bunnies.", map: "https://maps.google.com/?q=Peter+Rabbit+Adelaide" },
+          { id: 5, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Rest time after a day out." }
         ]
       },
       {
         date: "Nov 10 (Tue)",
         events: [
-          { time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Zoo", desc: "Visit Nature's Playground & see animals.", map: "https://maps.google.com/?q=Adelaide+Zoo" },
-          { time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "iTL Italian Kitchen", desc: "Spacious pasta & wood-fired pizza spot.", map: "https://maps.google.com/?q=iTL+Italian+Kitchen+Adelaide" },
-          { time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Fresh produce from Central Market." }
+          { id: 6, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Zoo", desc: "Visit Nature's Playground & see animals.", map: "https://maps.google.com/?q=Adelaide+Zoo" },
+          { id: 7, time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "iTL Italian Kitchen", desc: "Spacious pasta & wood-fired pizza spot.", map: "https://maps.google.com/?q=iTL+Italian+Kitchen+Adelaide" },
+          { id: 8, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Fresh produce run from Central Market." }
         ]
       },
       {
         date: "Nov 11 (Wed)",
         events: [
-          { time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Cleland Wildlife Park", desc: "Feed kangaroos up close in Adelaide Hills.", map: "https://maps.google.com/?q=Cleland+Wildlife+Park" },
-          { time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Grünthal Brew (Hahndorf)", desc: "Spacious lawn dining for the family.", map: "https://maps.google.com/?q=Grunthal+Brew" },
-          { time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Relaxing evening at home." }
+          { id: 9, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Cleland Wildlife Park", desc: "Feed kangaroos up close in Adelaide Hills.", map: "https://maps.google.com/?q=Cleland+Wildlife+Park" },
+          { id: 10, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Grünthal Brew (Hahndorf)", desc: "Spacious lawn dining for the family.", map: "https://maps.google.com/?q=Grunthal+Brew" },
+          { id: 11, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Relaxing evening at home." }
+        ]
+      },
+      {
+        date: "Nov 12 (Thu)",
+        events: [
+          { id: 12, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Tusmore Park Wading Pool", desc: "Shaded playground & ankle-deep toddler pool.", map: "https://maps.google.com/?q=Tusmore+Park" },
+          { id: 13, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "The Rezz (Newton)", desc: "Great food with dedicated indoor/outdoor toddler play areas.", map: "https://maps.google.com/?q=The+Rezz+Newton" },
+          { id: 14, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Casual family cooking at home." }
+        ]
+      },
+      {
+        date: "Nov 13 (Fri)",
+        events: [
+          { id: 15, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "McLaren Vale Scenic Drive", desc: "Beautiful vine landscapes and coastline views.", map: "https://maps.google.com/?q=McLaren+Vale" },
+          { id: 16, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Beach Road Wines", desc: "Wood-fired pizzas & big grassy lawns for toddler to roam.", map: "https://maps.google.com/?q=Beach+Road+Wines" },
+          { id: 17, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Home-cooked meal after winery trip." }
+        ]
+      },
+      {
+        date: "Nov 14 (Sat)",
+        events: [
+          { id: 18, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Glenelg Foreshore & Beach", desc: "Fenced foreshore playground on the sand & coastal boardwalk.", map: "https://maps.google.com/?q=Glenelg+Beach" },
+          { id: 19, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Henley House (Henley Beach)", desc: "Relaxed beachside lunch with wide ramp access.", map: "https://maps.google.com/?q=Henley+House+Henley+Beach" },
+          { id: 20, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner / Takeaway", desc: "Casual dinner at home." }
+        ]
+      },
+      {
+        date: "Nov 15 (Sun)",
+        events: [
+          { id: 21, time: "10:00 AM", type: "Activity", tag: "tag-morning", title: "Local Park & Leisure Time", desc: "Easy relaxed morning with family.", map: "https://maps.google.com/?q=Adelaide+Parklands" },
+          { id: 22, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Local Neighbourhood Pub / Cafe", desc: "Casual family lunch near home." },
+          { id: 23, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Farewell Home Dinner", desc: "Final family dinner & packing prep." }
+        ]
+      },
+      {
+        date: "Nov 16 (Mon)",
+        events: [
+          { id: 24, time: "Morning", type: "Activity", tag: "tag-morning", title: "Final Morning Coffee & Departure", desc: "Pack up, return rental car, head to Adelaide Airport." },
+          { id: 25, time: "12:00 PM", type: "Lunch", tag: "tag-lunch", title: "Airport Lunch & Flight Home", desc: "Safe travel back home!" }
         ]
       }
     ];
 
+    let itinerary = JSON.parse(localStorage.getItem('adelaide_itinerary')) || defaultItinerary;
+    let currentDayIndex = 0;
+    let isEditMode = false;
+
+    function saveToLocalStorage() {
+      localStorage.setItem('adelaide_itinerary', JSON.stringify(itinerary));
+    }
+
     function renderTabs() {
       const tabsContainer = document.getElementById('dayTabs');
+      tabsContainer.innerHTML = '';
       itinerary.forEach((item, index) => {
         const btn = document.createElement('button');
-        btn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
+        btn.className = `tab-btn ${index === currentDayIndex ? 'active' : ''}`;
         btn.innerText = item.date;
         btn.onclick = () => selectDay(index);
         tabsContainer.appendChild(btn);
@@ -147,27 +252,96 @@
     }
 
     function selectDay(index) {
-      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-        btn.classList.toggle('active', i === index);
-      });
+      currentDayIndex = index;
+      renderTabs();
 
       const contentContainer = document.getElementById('dayContent');
       contentContainer.innerHTML = '';
 
-      itinerary[index].events.forEach(evt => {
+      if (itinerary[index].events.length === 0) {
+        contentContainer.innerHTML = '<p style="text-align:center; opacity:0.7;">No activities planned for this day yet.</p>';
+        return;
+      }
+
+      itinerary[index].events.forEach((evt, evtIndex) => {
         const card = document.createElement('div');
         card.className = 'card';
         card.innerHTML = `
           <div class="card-header">
             <strong>${evt.time}</strong>
-            <span class="tag ${evt.tag}">${evt.type}</span>
+            <span class="tag ${evt.tag || 'tag-morning'}">${evt.type}</span>
           </div>
           <h3 style="margin:4px 0;">${evt.title}</h3>
           <p style="margin:4px 0; font-size:0.9rem;">${evt.desc}</p>
           ${evt.map ? `<a href="${evt.map}" target="_blank" class="map-btn">Open in Maps 📍</a>` : ''}
+          <div class="card-actions">
+            <button class="btn-card btn-card-edit" onclick="editEvent(${evtIndex})">Edit</button>
+            <button class="btn-card btn-delete" onclick="deleteEvent(${evtIndex})">Delete</button>
+          </div>
         `;
         contentContainer.appendChild(card);
       });
+    }
+
+    function toggleEditMode() {
+      isEditMode = !isEditMode;
+      document.body.classList.toggle('edit-mode', isEditMode);
+      document.getElementById('toggleEditBtn').innerText = isEditMode ? "💾 Done Editing" : "✏️ Edit Itinerary";
+    }
+
+    function addNewEvent() {
+      const time = prompt("Enter Time (e.g. 10:00 AM):", "10:00 AM");
+      if (!time) return;
+      const title = prompt("Enter Title (e.g. Beach Walk):", "New Activity");
+      if (!title) return;
+      const desc = prompt("Enter Description:", "Details here...");
+      const map = prompt("Enter Google Maps Link (optional):", "");
+
+      itinerary[currentDayIndex].events.push({
+        id: Date.now(),
+        time: time,
+        type: "Activity",
+        tag: "tag-morning",
+        title: title,
+        desc: desc || "",
+        map: map || ""
+      });
+
+      saveToLocalStorage();
+      selectDay(currentDayIndex);
+    }
+
+    function editEvent(evtIndex) {
+      const evt = itinerary[currentDayIndex].events[evtIndex];
+      const newTitle = prompt("Edit Title:", evt.title);
+      if (newTitle === null) return;
+      const newTime = prompt("Edit Time:", evt.time);
+      const newDesc = prompt("Edit Description:", evt.desc);
+      const newMap = prompt("Edit Maps Link:", evt.map || "");
+
+      evt.title = newTitle;
+      evt.time = newTime || evt.time;
+      evt.desc = newDesc || "";
+      evt.map = newMap || "";
+
+      saveToLocalStorage();
+      selectDay(currentDayIndex);
+    }
+
+    function deleteEvent(evtIndex) {
+      if (confirm("Are you sure you want to delete this item?")) {
+        itinerary[currentDayIndex].events.splice(evtIndex, 1);
+        saveToLocalStorage();
+        selectDay(currentDayIndex);
+      }
+    }
+
+    function resetToDefault() {
+      if (confirm("Reset itinerary back to original defaults?")) {
+        itinerary = JSON.parse(JSON.stringify(defaultItinerary));
+        saveToLocalStorage();
+        selectDay(0);
+      }
     }
 
     // Initialize
