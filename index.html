@@ -1,103 +1,539 @@
-<!-- Add this Grocery Tab HTML section inside your app container -->
-<div id="groceryView" style="max-width: 500px; margin: 0 auto;">
-  <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-    <input type="text" id="newItemInput" placeholder="Add grocery item (e.g., Oat Milk)..." 
-           style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 0.95rem;">
-    <select id="itemCategory" style="padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-      <option value="Breakfast">🥛 Breakfast</option>
-      <option value="Produce">🍌 Produce</option>
-      <option value="Dinner Cook">🍳 Dinner Cook</option>
-      <option value="Baby Snacks">👶 Baby Snacks</option>
-    </select>
-    <button onclick="addGroceryItem()" style="background: #2C5E3B; color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: bold;">Add</button>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adelaide Family Trip 2026</title>
+  <style>
+    :root {
+      --primary: #2C5E3B;
+      --accent: #E07A5F;
+      --bg: #F4F1DE;
+      --card-bg: #FFFFFF;
+      --text: #3D405B;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 16px;
+      padding-bottom: 40px;
+    }
+    header {
+      text-align: center;
+      padding: 8px 0 12px;
+    }
+    h1 { margin: 0; color: var(--primary); font-size: 1.6rem; }
+    p.subtitle { margin: 4px 0 12px; font-size: 0.85rem; opacity: 0.8; }
+
+    /* Top Main App Navigation Tabs */
+    .app-nav {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .app-nav-btn {
+      flex: 1;
+      max-width: 180px;
+      background: var(--card-bg);
+      border: 2px solid var(--primary);
+      color: var(--primary);
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      cursor: pointer;
+      text-align: center;
+    }
+    .app-nav-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    /* Action Buttons */
+    .top-actions {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .btn-edit { background: var(--accent); }
+    .btn-reset { background: #888; }
+
+    /* Itinerary Day Tabs */
+    .nav-tabs {
+      display: flex;
+      overflow-x: auto;
+      gap: 8px;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .tab-btn {
+      background: var(--card-bg);
+      border: 1px solid #ccc;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+    }
+    .tag {
+      font-size: 0.75rem;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .tag-morning { background: #E8F5E9; color: #2E7D32; }
+    .tag-lunch { background: #FFF3E0; color: #E65100; }
+    .tag-evening { background: #EDE7F6; color: #512DA8; }
+    .tag-arrival { background: #E1F5FE; color: #0288D1; }
+
+    .map-btn {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 12px;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    .card-actions {
+      display: none;
+      margin-top: 10px;
+      gap: 8px;
+    }
+    .edit-mode .card-actions { display: flex; }
+    .btn-card {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-delete { background: #d32f2f; color: white; }
+    .btn-card-edit { background: #1976d2; color: white; }
+
+    #addEventBtn {
+      display: none;
+      width: 100%;
+      background: #388e3c;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      margin-bottom: 16px;
+    }
+    .edit-mode #addEventBtn { display: block; }
+
+    /* Grocery List Styles */
+    .grocery-input-group {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .grocery-input-group input, .grocery-input-group select {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+    }
+    .quick-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+    .chip {
+      background: #E8F5E9;
+      border: 1px solid #2E7D32;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .grocery-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #fff;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Adelaide Trip 2026</h1>
+    <p class="subtitle">8 Nov - 16 Nov | Family Companion App</p>
+    
+    <!-- Top View Switcher -->
+    <div class="app-nav">
+      <button class="app-nav-btn active" id="navItineraryBtn" onclick="showView('itinerary')">📅 Itinerary</button>
+      <button class="app-nav-btn" id="navGroceryBtn" onclick="showView('grocery')">🛒 Grocery List</button>
+    </div>
+  </header>
+
+  <!-- ================= VIEW 1: ITINERARY ================= -->
+  <div id="itinerarySection">
+    <div class="top-actions">
+      <button class="btn btn-edit" id="toggleEditBtn" onclick="toggleEditMode()">✏️ Edit Itinerary</button>
+      <button class="btn btn-reset" onclick="resetToDefault()">🔄 Reset Default</button>
+    </div>
+
+    <div class="nav-tabs" id="dayTabs"></div>
+
+    <button id="addEventBtn" onclick="addNewEvent()">+ Add Activity / Meal to this Day</button>
+
+    <div id="dayContent"></div>
   </div>
 
-  <!-- Quick Addition Chips -->
-  <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px;">
-    <button onclick="quickAdd('Full Cream Milk', 'Breakfast')" style="background: #E8F5E9; border: 1px solid #2E7D32; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; white-space: nowrap;">+ Milk</button>
-    <button onclick="quickAdd('Eggs 12pk', 'Breakfast')" style="background: #E8F5E9; border: 1px solid #2E7D32; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; white-space: nowrap;">+ Eggs</button>
-    <button onclick="quickAdd('Bananas', 'Produce')" style="background: #E8F5E9; border: 1px solid #2E7D32; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; white-space: nowrap;">+ Bananas</button>
-    <button onclick="quickAdd('Baby Pouches', 'Baby Snacks')" style="background: #E8F5E9; border: 1px solid #2E7D32; padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; white-space: nowrap;">+ Baby Snacks</button>
+  <!-- ================= VIEW 2: GROCERY LIST ================= -->
+  <div id="grocerySection" style="display: none; max-width: 500px; margin: 0 auto;">
+    <div class="grocery-input-group">
+      <input type="text" id="newItemInput" placeholder="Add item (e.g., Oat Milk)..." style="flex: 1;">
+      <select id="itemCategory">
+        <option value="Breakfast">🥛 Breakfast</option>
+        <option value="Produce">🍌 Produce</option>
+        <option value="Dinner Cook">🍳 Dinner Cook</option>
+        <option value="Baby Snacks">👶 Baby Snacks</option>
+      </select>
+      <button onclick="addGroceryItem()" class="btn" style="border-radius: 8px;">Add</button>
+    </div>
+
+    <div class="quick-chips">
+      <div class="chip" onclick="quickAdd('Full Cream Milk', 'Breakfast')">+ Milk</div>
+      <div class="chip" onclick="quickAdd('Eggs 12pk', 'Breakfast')">+ Eggs</div>
+      <div class="chip" onclick="quickAdd('Bananas', 'Produce')">+ Bananas</div>
+      <div class="chip" onclick="quickAdd('Baby Pouches', 'Baby Snacks')">+ Baby Snacks</div>
+    </div>
+
+    <div id="groceryListContainer"></div>
   </div>
 
-  <!-- List Container -->
-  <div id="groceryListContainer"></div>
-</div>
+  <script>
+    // ------------------- VIEW SWITCHER -------------------
+    function showView(view) {
+      document.getElementById('itinerarySection').style.display = view === 'itinerary' ? 'block' : 'none';
+      document.getElementById('grocerySection').style.display = view === 'grocery' ? 'block' : 'none';
+      
+      document.getElementById('navItineraryBtn').classList.toggle('active', view === 'itinerary');
+      document.getElementById('navGroceryBtn').classList.toggle('active', view === 'grocery');
+    }
 
-<script>
-  let groceryItems = JSON.parse(localStorage.getItem('adelaide_groceries')) || [
-    { id: 1, name: "Full Cream Milk (Baby)", category: "Breakfast", bought: false },
-    { id: 2, name: "Eggs (12-pack)", category: "Breakfast", bought: false },
-    { id: 3, name: "Bananas & Apples", category: "Produce", bought: false },
-    { id: 4, name: "Sourdough Bread", category: "Breakfast", bought: true }
-  ];
+    // ------------------- ITINERARY DATA & LOGIC -------------------
+    const defaultItinerary = [
+      {
+        date: "Nov 8 (Sun)",
+        events: [
+          { id: 1, time: "Morning / Afternoon", type: "Arrival", tag: "tag-arrival", title: "Arrive in Adelaide", desc: "Settle into home, unpack, let baby explore the space." },
+          { id: 2, time: "7:00 PM", type: "Dinner", tag: "tag-evening", title: "Welcome Dinner at Home", desc: "Casual family meal cooked at brother's home." }
+        ]
+      },
+      {
+        date: "Nov 9 (Mon)",
+        events: [
+          { id: 3, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Botanic Garden", desc: "Pram-friendly walk & open lawn play for baby.", map: "https://maps.google.com/?q=Adelaide+Botanic+Garden" },
+          { id: 4, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Peter Rabbit Cafe", desc: "Garden cafe with real bunnies.", map: "https://maps.google.com/?q=Peter+Rabbit+Adelaide" },
+          { id: 5, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Rest time after a day out." }
+        ]
+      },
+      {
+        date: "Nov 10 (Tue)",
+        events: [
+          { id: 6, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Zoo", desc: "Visit Nature's Playground & see animals.", map: "https://maps.google.com/?q=Adelaide+Zoo" },
+          { id: 7, time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "iTL Italian Kitchen", desc: "Spacious pasta & wood-fired pizza spot.", map: "https://maps.google.com/?q=iTL+Italian+Kitchen+Adelaide" },
+          { id: 8, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Fresh produce run from Central Market." }
+        ]
+      },
+      {
+        date: "Nov 11 (Wed)",
+        events: [
+          { id: 9, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Cleland Wildlife Park", desc: "Feed kangaroos up close in Adelaide Hills.", map: "https://maps.google.com/?q=Cleland+Wildlife+Park" },
+          { id: 10, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Grünthal Brew (Hahndorf)", desc: "Spacious lawn dining for the family.", map: "https://maps.google.com/?q=Grunthal+Brew" },
+          { id: 11, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Relaxing evening at home." }
+        ]
+      },
+      {
+        date: "Nov 12 (Thu)",
+        events: [
+          { id: 12, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Monarto Safari Park", desc: "Open-range safari bus ride, giraffes & chimps.", map: "https://maps.google.com/?q=Monarto+Safari+Park" },
+          { id: 13, time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "Monarto Visitor Centre Cafe", desc: "Family-friendly cafe overlooking the park entry.", map: "https://maps.google.com/?q=Monarto+Safari+Park" },
+          { id: 14, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Rest time after safari day." }
+        ]
+      },
+      {
+        date: "Nov 13 (Fri)",
+        events: [
+          { id: 15, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Tusmore Park Wading Pool", desc: "Shaded playground & ankle-deep toddler pool.", map: "https://maps.google.com/?q=Tusmore+Park" },
+          { id: 16, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "The Rezz (Newton)", desc: "Great food with dedicated indoor/outdoor toddler play areas.", map: "https://maps.google.com/?q=The+Rezz+Newton" },
+          { id: 17, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Casual family cooking at home." }
+        ]
+      },
+      {
+        date: "Nov 14 (Sat)",
+        events: [
+          { id: 18, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "McLaren Vale Scenic Drive", desc: "Beautiful vine landscapes and coastline views.", map: "https://maps.google.com/?q=McLaren+Vale" },
+          { id: 19, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Beach Road Wines", desc: "Wood-fired pizzas & big grassy lawns for toddler to roam.", map: "https://maps.google.com/?q=Beach+Road+Wines" },
+          { id: 20, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Home-cooked meal after winery trip." }
+        ]
+      },
+      {
+        date: "Nov 15 (Sun)",
+        events: [
+          { id: 21, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Glenelg Foreshore & Beach", desc: "Fenced foreshore playground on the sand & coastal boardwalk.", map: "https://maps.google.com/?q=Glenelg+Beach" },
+          { id: 22, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Henley House (Henley Beach)", desc: "Relaxed beachside lunch with wide ramp access.", map: "https://maps.google.com/?q=Henley+House+Henley+Beach" },
+          { id: 23, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Farewell Home Dinner", desc: "Final family dinner & packing prep." }
+        ]
+      },
+      {
+        date: "Nov 16 (Mon)",
+        events: [
+          { id: 24, time: "Morning", type: "Activity", tag: "tag-morning", title: "Final Morning Coffee & Departure", desc: "Pack up, return rental car, head to Adelaide Airport." },
+          { id: 25, time: "12:00 PM", type: "Lunch", tag: "tag-lunch", title: "Airport Lunch & Flight Home", desc: "Safe travel back home!" }
+        ]
+      }
+    ];
 
-  function saveGroceries() {
-    localStorage.setItem('adelaide_groceries', JSON.stringify(groceryItems));
-    renderGroceries();
-  }
+    let itinerary = JSON.parse(localStorage.getItem('adelaide_itinerary')) || defaultItinerary;
+    let currentDayIndex = 0;
+    let isEditMode = false;
 
-  function renderGroceries() {
-    const container = document.getElementById('groceryListContainer');
-    container.innerHTML = '';
+    function saveToLocalStorage() {
+      localStorage.setItem('adelaide_itinerary', JSON.stringify(itinerary));
+    }
 
-    const categories = ["Breakfast", "Produce", "Dinner Cook", "Baby Snacks"];
-
-    categories.forEach(cat => {
-      const catItems = groceryItems.filter(item => item.category === cat);
-      if (catItems.length === 0) return;
-
-      const catHeader = document.createElement('h4');
-      catHeader.style.cssText = "margin: 12px 0 6px 0; color: #2C5E3B; font-size: 0.9rem; text-transform: uppercase;";
-      catHeader.innerText = cat;
-      container.appendChild(catHeader);
-
-      catItems.forEach(item => {
-        const row = document.createElement('div');
-        row.style.cssText = `display:flex; justify-content:space-between; align-items:center; background:#fff; padding:10px 12px; border-radius:8px; margin-bottom:6px; ${item.bought ? 'opacity:0.5;' : ''}`;
-        row.innerHTML = `
-          <label style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer;">
-            <input type="checkbox" ${item.bought ? 'checked' : ''} onchange="toggleBought(${item.id})" style="width:18px; height:18px;">
-            <span style="${item.bought ? 'text-decoration:line-through;' : 'font-weight:500;'}">${item.name}</span>
-          </label>
-          <button onclick="deleteGrocery(${item.id})" style="background:none; border:none; color:#d32f2f; cursor:pointer; font-size:1rem;">✕</button>
-        `;
-        container.appendChild(row);
+    function renderTabs() {
+      const tabsContainer = document.getElementById('dayTabs');
+      tabsContainer.innerHTML = '';
+      itinerary.forEach((item, index) => {
+        const btn = document.createElement('button');
+        btn.className = `tab-btn ${index === currentDayIndex ? 'active' : ''}`;
+        btn.innerText = item.date;
+        btn.onclick = () => selectDay(index);
+        tabsContainer.appendChild(btn);
       });
-    });
-  }
+    }
 
-  function addGroceryItem() {
-    const nameInput = document.getElementById('newItemInput');
-    const catSelect = document.getElementById('itemCategory');
-    if (!nameInput.value.trim()) return;
+    function selectDay(index) {
+      currentDayIndex = index;
+      renderTabs();
 
-    groceryItems.push({
-      id: Date.now(),
-      name: nameInput.value.trim(),
-      category: catSelect.value,
-      bought: false
-    });
+      const contentContainer = document.getElementById('dayContent');
+      contentContainer.innerHTML = '';
 
-    nameInput.value = '';
-    saveGroceries();
-  }
+      if (itinerary[index].events.length === 0) {
+        contentContainer.innerHTML = '<p style="text-align:center; opacity:0.7;">No activities planned for this day yet.</p>';
+        return;
+      }
 
-  function quickAdd(name, category) {
-    groceryItems.push({ id: Date.now(), name, category, bought: false });
-    saveGroceries();
-  }
+      itinerary[index].events.forEach((evt, evtIndex) => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="card-header">
+            <strong>${evt.time}</strong>
+            <span class="tag ${evt.tag || 'tag-morning'}">${evt.type}</span>
+          </div>
+          <h3 style="margin:4px 0;">${evt.title}</h3>
+          <p style="margin:4px 0; font-size:0.9rem;">${evt.desc}</p>
+          ${evt.map ? `<a href="${evt.map}" target="_blank" class="map-btn">Open in Maps 📍</a>` : ''}
+          <div class="card-actions">
+            <button class="btn-card btn-card-edit" onclick="editEvent(${evtIndex})">Edit</button>
+            <button class="btn-card btn-delete" onclick="deleteEvent(${evtIndex})">Delete</button>
+          </div>
+        `;
+        contentContainer.appendChild(card);
+      });
+    }
 
-  function toggleBought(id) {
-    const item = groceryItems.find(i => i.id === id);
-    if (item) item.bought = !item.bought;
-    saveGroceries();
-  }
+    function toggleEditMode() {
+      isEditMode = !isEditMode;
+      document.body.classList.toggle('edit-mode', isEditMode);
+      document.getElementById('toggleEditBtn').innerText = isEditMode ? "💾 Done Editing" : "✏️ Edit Itinerary";
+    }
 
-  function deleteGrocery(id) {
-    groceryItems = groceryItems.filter(i => i.id !== id);
-    saveGroceries();
-  }
+    function addNewEvent() {
+      const time = prompt("Enter Time (e.g. 10:00 AM):", "10:00 AM");
+      if (!time) return;
+      const title = prompt("Enter Title (e.g. Beach Walk):", "New Activity");
+      if (!title) return;
+      const desc = prompt("Enter Description:", "Details here...");
+      const map = prompt("Enter Google Maps Link (optional):", "");
 
-  renderGroceries();
-</script>
+      itinerary[currentDayIndex].events.push({
+        id: Date.now(),
+        time: time,
+        type: "Activity",
+        tag: "tag-morning",
+        title: title,
+        desc: desc || "",
+        map: map || ""
+      });
+
+      saveToLocalStorage();
+      selectDay(currentDayIndex);
+    }
+
+    function editEvent(evtIndex) {
+      const evt = itinerary[currentDayIndex].events[evtIndex];
+      const newTitle = prompt("Edit Title:", evt.title);
+      if (newTitle === null) return;
+      const newTime = prompt("Edit Time:", evt.time);
+      const newDesc = prompt("Edit Description:", evt.desc);
+      const newMap = prompt("Edit Maps Link:", evt.map || "");
+
+      evt.title = newTitle;
+      evt.time = newTime || evt.time;
+      evt.desc = newDesc || "";
+      evt.map = newMap || "";
+
+      saveToLocalStorage();
+      selectDay(currentDayIndex);
+    }
+
+    function deleteEvent(evtIndex) {
+      if (confirm("Are you sure you want to delete this item?")) {
+        itinerary[currentDayIndex].events.splice(evtIndex, 1);
+        saveToLocalStorage();
+        selectDay(currentDayIndex);
+      }
+    }
+
+    function resetToDefault() {
+      if (confirm("Reset itinerary back to original defaults?")) {
+        itinerary = JSON.parse(JSON.stringify(defaultItinerary));
+        saveToLocalStorage();
+        selectDay(0);
+      }
+    }
+
+    // ------------------- GROCERY LIST DATA & LOGIC -------------------
+    let groceryItems = JSON.parse(localStorage.getItem('adelaide_groceries')) || [
+      { id: 1, name: "Full Cream Milk (Baby)", category: "Breakfast", bought: false },
+      { id: 2, name: "Eggs (12-pack)", category: "Breakfast", bought: false },
+      { id: 3, name: "Bananas & Apples", category: "Produce", bought: false },
+      { id: 4, name: "Sourdough Bread", category: "Breakfast", bought: true }
+    ];
+
+    function saveGroceries() {
+      localStorage.setItem('adelaide_groceries', JSON.stringify(groceryItems));
+      renderGroceries();
+    }
+
+    function renderGroceries() {
+      const container = document.getElementById('groceryListContainer');
+      container.innerHTML = '';
+
+      const categories = ["Breakfast", "Produce", "Dinner Cook", "Baby Snacks"];
+
+      categories.forEach(cat => {
+        const catItems = groceryItems.filter(item => item.category === cat);
+        if (catItems.length === 0) return;
+
+        const catHeader = document.createElement('h4');
+        catHeader.style.cssText = "margin: 14px 0 6px 0; color: #2C5E3B; font-size: 0.85rem; text-transform: uppercase;";
+        catHeader.innerText = cat;
+        container.appendChild(catHeader);
+
+        catItems.forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'grocery-item-row';
+          if (item.bought) row.style.opacity = '0.5';
+
+          row.innerHTML = `
+            <label style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer;">
+              <input type="checkbox" ${item.bought ? 'checked' : ''} onchange="toggleBought(${item.id})" style="width:18px; height:18px;">
+              <span style="${item.bought ? 'text-decoration:line-through;' : 'font-weight:500;'}">${item.name}</span>
+            </label>
+            <button onclick="deleteGrocery(${item.id})" style="background:none; border:none; color:#d32f2f; cursor:pointer; font-size:1rem;">✕</button>
+          `;
+          container.appendChild(row);
+        });
+      });
+    }
+
+    function addGroceryItem() {
+      const nameInput = document.getElementById('newItemInput');
+      const catSelect = document.getElementById('itemCategory');
+      if (!nameInput.value.trim()) return;
+
+      groceryItems.push({
+        id: Date.now(),
+        name: nameInput.value.trim(),
+        category: catSelect.value,
+        bought: false
+      });
+
+      nameInput.value = '';
+      saveGroceries();
+    }
+
+    function quickAdd(name, category) {
+      groceryItems.push({ id: Date.now(), name, category, bought: false });
+      saveGroceries();
+    }
+
+    function toggleBought(id) {
+      const item = groceryItems.find(i => i.id === id);
+      if (item) item.bought = !item.bought;
+      saveGroceries();
+    }
+
+    function deleteGrocery(id) {
+      groceryItems = groceryItems.filter(i => i.id !== id);
+      saveGroceries();
+    }
+
+    // Initialize App
+    renderTabs();
+    selectDay(0);
+    renderGroceries();
+  </script>
+</body>
+</html>
