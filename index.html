@@ -2,546 +2,676 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2C5E3B">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Adelaide 2026">
   <title>Adelaide Family Trip 2026</title>
   <style>
     :root {
       --primary: #2C5E3B;
+      --primary-soft: #E6EFE8;
       --accent: #E07A5F;
       --bg: #F4F1DE;
-      --card-bg: #FFFFFF;
+      --card: #FFFFFF;
       --text: #3D405B;
+      --muted: #7A7C91;
+      --line: #E7E3CF;
+      --danger: #C62828;
+      --shadow: 0 2px 8px rgba(0,0,0,0.06);
     }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: #7FBF8E;
+        --primary-soft: #1F3326;
+        --accent: #F0937A;
+        --bg: #16181D;
+        --card: #22252C;
+        --text: #E8E6DC;
+        --muted: #9A9CAB;
+        --line: #33363F;
+        --danger: #EF6C6C;
+        --shadow: none;
+      }
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
+      background: var(--bg);
       color: var(--text);
       margin: 0;
-      padding: 16px;
-      padding-bottom: 40px;
+      padding: 0 16px calc(96px + env(safe-area-inset-bottom));
+      line-height: 1.4;
     }
-    header {
-      text-align: center;
-      padding: 8px 0 12px;
-    }
-    h1 { margin: 0; color: var(--primary); font-size: 1.6rem; }
-    p.subtitle { margin: 4px 0 12px; font-size: 0.85rem; opacity: 0.8; }
+    .wrap { max-width: 560px; margin: 0 auto; }
+    button, input, select, textarea { font: inherit; color: inherit; }
 
-    /* Top Navigation Switcher */
-    .app-nav {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    .app-nav-btn {
-      flex: 1;
-      max-width: 180px;
-      background: var(--card-bg);
-      border: 2px solid var(--primary);
-      color: var(--primary);
-      padding: 10px;
-      border-radius: 12px;
-      font-weight: bold;
-      font-size: 0.95rem;
-      cursor: pointer;
-      text-align: center;
-    }
-    .app-nav-btn.active {
-      background: var(--primary);
-      color: white;
+    /* Header */
+    header { padding: calc(14px + env(safe-area-inset-top)) 0 8px; text-align: center; }
+    h1 { margin: 0; color: var(--primary); font-size: 1.5rem; }
+    .subtitle { margin: 2px 0 0; font-size: 0.85rem; color: var(--muted); }
+    .countdown {
+      display: inline-block; margin-top: 8px; padding: 4px 12px; border-radius: 999px;
+      background: var(--primary-soft); color: var(--primary); font-size: 0.8rem; font-weight: 700;
     }
 
-    /* Actions */
-    .top-actions {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 16px;
+    /* Day picker */
+    .days {
+      display: flex; gap: 8px; overflow-x: auto; padding: 10px 2px 12px;
+      scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: none;
     }
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 0.8rem;
+    .days::-webkit-scrollbar { display: none; }
+    .day-btn {
+      flex: 0 0 auto; scroll-snap-align: center; min-width: 58px; padding: 8px 10px;
+      border-radius: 14px; border: 1px solid var(--line); background: var(--card);
+      text-align: center; cursor: pointer; position: relative;
     }
-    .btn-edit { background: var(--accent); }
-    .btn-reset { background: #888; }
-
-    /* Itinerary Day Tabs */
-    .nav-tabs {
-      display: flex;
-      overflow-x: auto;
-      gap: 8px;
-      padding-bottom: 8px;
-      margin-bottom: 16px;
-      -webkit-overflow-scrolling: touch;
-    }
-    .tab-btn {
-      background: var(--card-bg);
-      border: 1px solid #ccc;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-weight: 600;
-      white-space: nowrap;
-      cursor: pointer;
-    }
-    .tab-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
+    .day-btn .dow { display: block; font-size: 0.7rem; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+    .day-btn .dnum { display: block; font-size: 1.2rem; font-weight: 800; }
+    .day-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .day-btn.active .dow { color: rgba(255,255,255,0.8); }
+    .day-btn.today::after {
+      content: ""; position: absolute; top: 6px; right: 6px; width: 7px; height: 7px;
+      border-radius: 50%; background: var(--accent);
     }
 
-    /* Cards */
+    .day-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin: 4px 0 10px; }
+    .day-head h2 { margin: 0; font-size: 1.15rem; }
+    .day-head .date { font-size: 0.8rem; color: var(--muted); }
+    .tip {
+      background: var(--primary-soft); color: var(--text); border-radius: 12px;
+      padding: 10px 12px; font-size: 0.85rem; margin-bottom: 12px;
+    }
+    .tip b { color: var(--primary); }
+
+    /* Timeline cards */
     .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 14px 16px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      background: var(--card); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+      box-shadow: var(--shadow); display: flex; gap: 12px; align-items: flex-start;
     }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #eee;
-      padding-bottom: 6px;
-      margin-bottom: 8px;
+    .card.done { opacity: 0.55; }
+    .card.done .ev-title { text-decoration: line-through; }
+    .check {
+      flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+      border: 2px solid var(--line); background: transparent; cursor: pointer;
+      display: grid; place-items: center; font-size: 0.9rem; margin-top: 2px;
     }
-    .tag {
-      font-size: 0.75rem;
-      padding: 3px 8px;
-      border-radius: 10px;
-      font-weight: bold;
-      text-transform: uppercase;
+    .card.done .check { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .ev-body { flex: 1; min-width: 0; }
+    .ev-meta { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+    .ev-title { margin: 2px 0 2px; font-size: 1rem; font-weight: 700; }
+    .ev-desc { margin: 0; font-size: 0.88rem; }
+    .pill { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em; }
+    .t-activity { background: #E8F5E9; color: #2E7D32; }
+    .t-meal { background: #FFF3E0; color: #E65100; }
+    .t-travel { background: #E1F5FE; color: #0277BD; }
+    .t-rest { background: #EDE7F6; color: #512DA8; }
+    .t-optional { background: #FCE4EC; color: #AD1457; }
+    @media (prefers-color-scheme: dark) {
+      .t-activity { background: #1E3A24; color: #8FD69B; }
+      .t-meal { background: #3D2A14; color: #FFB870; }
+      .t-travel { background: #12313F; color: #7CCBF0; }
+      .t-rest { background: #2B2440; color: #B9A6F0; }
+      .t-optional { background: #3D1A2A; color: #F48FB1; }
     }
-    .tag-morning { background: #E8F5E9; color: #2E7D32; }
-    .tag-lunch { background: #FFF3E0; color: #E65100; }
-    .tag-evening { background: #EDE7F6; color: #512DA8; }
-    .tag-arrival { background: #E1F5FE; color: #0288D1; }
+    .ev-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+    .link-btn {
+      display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px;
+      font-size: 0.8rem; font-weight: 700; text-decoration: none; border: none; cursor: pointer;
+      background: var(--accent); color: #fff;
+    }
+    .link-btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
 
-    .map-btn {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 6px 12px;
-      background: var(--accent);
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: bold;
+    .row-btns { display: flex; gap: 8px; margin: 6px 0 16px; }
+    .big-btn {
+      flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer;
+      background: var(--primary); color: #fff; font-size: 0.92rem;
     }
+    .big-btn.light { background: var(--card); color: var(--primary); border: 1px solid var(--line); }
+    .small-link { background: none; border: none; color: var(--muted); font-size: 0.8rem; text-decoration: underline; cursor: pointer; display: block; margin: 8px auto 0; }
 
-    .card-actions {
-      display: none;
-      margin-top: 10px;
-      gap: 8px;
+    /* Grocery */
+    .add-row { display: flex; gap: 6px; margin: 10px 0; }
+    .add-row input, .add-row select {
+      padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); font-size: 0.95rem;
     }
-    .edit-mode .card-actions { display: flex; }
-    .btn-card {
-      padding: 4px 10px;
-      font-size: 0.75rem;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
+    .add-row input { flex: 1; min-width: 0; }
+    .add-row select { max-width: 38%; }
+    .progress { height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; margin: 6px 0 4px; }
+    .progress > div { height: 100%; background: var(--primary); width: 0; transition: width .25s; }
+    .progress-label { font-size: 0.8rem; color: var(--muted); display: flex; justify-content: space-between; }
+    .cat-head { margin: 16px 0 6px; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; color: var(--primary); display: flex; justify-content: space-between; }
+    .g-item {
+      display: flex; align-items: center; gap: 12px; background: var(--card); border-radius: 10px;
+      padding: 12px; margin-bottom: 6px; box-shadow: var(--shadow); cursor: pointer;
     }
-    .btn-delete { background: #d32f2f; color: white; }
-    .btn-card-edit { background: #1976d2; color: white; }
+    .g-item.bought { opacity: 0.5; }
+    .g-item.bought .g-name { text-decoration: line-through; }
+    .g-box { width: 22px; height: 22px; border-radius: 6px; border: 2px solid var(--line); flex: 0 0 auto; display: grid; place-items: center; font-size: 0.8rem; }
+    .g-item.bought .g-box { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .g-name { flex: 1; }
+    .g-del { background: none; border: none; color: var(--danger); font-size: 1.05rem; cursor: pointer; padding: 4px 6px; }
+    .toggle-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--muted); margin-top: 8px; }
 
-    #addEventBtn {
-      display: none;
-      width: 100%;
-      background: #388e3c;
-      color: white;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
-      margin-bottom: 16px;
-    }
-    .edit-mode #addEventBtn { display: block; }
+    /* Info */
+    .info-card { background: var(--card); border-radius: 14px; padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .info-card h3 { margin: 0 0 8px; font-size: 1rem; color: var(--primary); }
+    .flight { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+    .flight:first-of-type { border-top: none; }
+    .flight .code { font-weight: 800; font-size: 1.05rem; }
+    .flight .route { font-size: 0.85rem; color: var(--muted); }
+    .flight .times { text-align: right; font-size: 0.85rem; }
+    .info-card ul { margin: 0; padding-left: 18px; font-size: 0.9rem; }
+    .info-card li { margin-bottom: 4px; }
+    .note { font-size: 0.75rem; color: var(--muted); margin-top: 6px; }
 
-    /* Grocery Styles */
-    .grocery-input-group {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 10px;
+    /* Bottom nav */
+    nav.bottom {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+      background: var(--card); border-top: 1px solid var(--line);
+      display: flex; justify-content: center; padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
     }
-    .grocery-input-group input, .grocery-input-group select {
-      padding: 8px 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      font-size: 0.9rem;
+    nav.bottom .inner { display: flex; width: 100%; max-width: 560px; }
+    nav.bottom button {
+      flex: 1; background: none; border: none; padding: 6px 4px; cursor: pointer; color: var(--muted);
+      display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.72rem; font-weight: 700;
     }
-    .quick-chips {
-      display: flex;
-      gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      margin-bottom: 12px;
+    nav.bottom button .ico { font-size: 1.35rem; line-height: 1; }
+    nav.bottom button.active { color: var(--primary); }
+
+    /* Sheet (edit form) */
+    dialog {
+      border: none; padding: 0; margin: auto auto 0; width: 100%; max-width: 560px;
+      border-radius: 18px 18px 0 0; background: var(--card); color: var(--text);
     }
-    .chip {
-      background: #E8F5E9;
-      border: 1px solid #2E7D32;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-      white-space: nowrap;
-      cursor: pointer;
+    dialog::backdrop { background: rgba(0,0,0,0.4); }
+    .sheet { padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
+    .sheet h3 { margin: 0 0 12px; }
+    .field { margin-bottom: 10px; }
+    .field label { display: block; font-size: 0.78rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 1rem;
     }
-    .grocery-item-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fff;
-      padding: 10px 12px;
-      border-radius: 8px;
-      margin-bottom: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    .field textarea { min-height: 70px; resize: vertical; }
+    .two { display: flex; gap: 8px; }
+    .two .field { flex: 1; }
+    .sheet-btns { display: flex; gap: 8px; margin-top: 12px; }
+    .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+
+    .toast {
+      position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+      background: #333; color: #fff; padding: 8px 14px; border-radius: 999px; font-size: 0.85rem;
+      opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20;
     }
+    .toast.show { opacity: 1; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
+<div class="wrap">
 
   <header>
     <h1>Adelaide Trip 2026</h1>
-    <p class="subtitle">8 Nov - 16 Nov | Family Companion App</p>
-    
-    <!-- Navigation Switcher -->
-    <div class="app-nav">
-      <button class="app-nav-btn active" id="navItineraryBtn" onclick="showView('itinerary')">📅 Itinerary</button>
-      <button class="app-nav-btn" id="navGroceryBtn" onclick="showView('grocery')">🛒 Grocery List</button>
-    </div>
+    <p class="subtitle">Mon 9 – Sun 15 Nov · Family Companion App</p>
+    <span class="countdown" id="countdown"></span>
   </header>
 
-  <!-- ================= ITINERARY VIEW ================= -->
-  <div id="itinerarySection">
-    <div class="top-actions">
-      <button class="btn btn-edit" id="toggleEditBtn" onclick="toggleEditMode()">✏️ Edit Itinerary</button>
-      <button class="btn btn-reset" onclick="resetToDefault()">🔄 Reset to Latest Schedule</button>
-    </div>
-
-    <div class="nav-tabs" id="dayTabs"></div>
-
-    <button id="addEventBtn" onclick="addNewEvent()">+ Add Activity / Meal to this Day</button>
-
+  <!-- ================= PLAN ================= -->
+  <section id="view-plan">
+    <div class="days" id="dayTabs"></div>
     <div id="dayContent"></div>
-  </div>
+    <div class="row-btns">
+      <button class="big-btn" onclick="openSheet()">+ Add to this day</button>
+      <button class="big-btn light" onclick="shareDay()">Share day</button>
+    </div>
+    <button class="small-link" onclick="resetPlan()">Reset to latest plan</button>
+  </section>
 
-  <!-- ================= GROCERY VIEW ================= -->
-  <div id="grocerySection" style="display: none; max-width: 500px; margin: 0 auto;">
-    <div class="grocery-input-group">
-      <input type="text" id="newItemInput" placeholder="Add item (e.g., Oat Milk)..." style="flex: 1;">
-      <select id="itemCategory">
-        <option value="Breakfast">🥛 Breakfast</option>
-        <option value="Produce">🍌 Produce</option>
-        <option value="Dinner Cook">🍳 Dinner Cook</option>
-        <option value="Baby Snacks">👶 Baby Snacks</option>
-      </select>
-      <button onclick="addGroceryItem()" class="btn" style="border-radius: 8px;">Add</button>
+  <!-- ================= GROCERIES ================= -->
+  <section id="view-groceries" class="hidden">
+    <div class="progress"><div id="gProgress"></div></div>
+    <div class="progress-label"><span id="gCount"></span><span id="gLeft"></span></div>
+
+    <form class="add-row" onsubmit="addGrocery(event)">
+      <input type="text" id="gInput" placeholder="Add item…" autocomplete="off" enterkeyhint="done">
+      <select id="gCat"></select>
+    </form>
+
+    <div id="gList"></div>
+
+    <label class="toggle-row"><input type="checkbox" id="hideBought" onchange="renderGroceries()"> Hide items already bought</label>
+    <div class="row-btns" style="margin-top:12px">
+      <button class="big-btn light" onclick="shareGroceries()">Share list</button>
+      <button class="big-btn light" onclick="clearBought()">Clear bought</button>
+    </div>
+  </section>
+
+  <!-- ================= TRIP INFO ================= -->
+  <section id="view-info" class="hidden">
+    <div class="info-card">
+      <h3>✈️ Flights (Malaysia Airlines)</h3>
+      <div class="flight">
+        <div><div class="code">MH139</div><div class="route">Kuala Lumpur → Adelaide</div></div>
+        <div class="times">Dep Sun 8 Nov, 22:25<br><b>Arr Mon 9 Nov, ~08:00</b></div>
+      </div>
+      <div class="flight">
+        <div><div class="code">MH138</div><div class="route">Adelaide → Kuala Lumpur</div></div>
+        <div class="times"><b>Dep Sun 15 Nov, 10:45</b><br>Arr Sun 15 Nov, 16:00</div>
+      </div>
+      <p class="note">Times are the current published schedule. Double-check against your booking a week before.</p>
     </div>
 
-    <div class="quick-chips">
-      <div class="chip" onclick="quickAdd('Full Cream Milk', 'Breakfast')">+ Milk</div>
-      <div class="chip" onclick="quickAdd('Eggs 12pk', 'Breakfast')">+ Eggs</div>
-      <div class="chip" onclick="quickAdd('Bananas', 'Produce')">+ Bananas</div>
-      <div class="chip" onclick="quickAdd('Baby Pouches', 'Baby Snacks')">+ Baby Snacks</div>
+    <div class="info-card">
+      <h3>🏠 Where we're staying</h3>
+      <div class="flight">
+        <div><div class="code">Stay 1</div><div class="route">17 Grigg Street, Marden SA 5070</div></div>
+        <a class="link-btn" href="https://www.google.com/maps/search/?api=1&query=17%20Grigg%20Street%2C%20Marden%20SA%205070" target="_blank" rel="noopener">📍 Maps</a>
+      </div>
+      <div class="flight">
+        <div><div class="code">Stay 2</div><div class="route">See map pin</div></div>
+        <a class="link-btn" href="https://maps.app.goo.gl/XuCdJSqLByZNephFA" target="_blank" rel="noopener">📍 Maps</a>
+      </div>
     </div>
 
-    <div id="groceryListContainer"></div>
+    <div class="info-card">
+      <h3>💡 Good to know</h3>
+      <ul>
+        <li>Adelaide is on daylight saving in November: UTC+10:30, 2.5 hours ahead of KL.</li>
+        <li>Central Market is closed Sundays and Mondays.</li>
+        <li>The sun is strong: SPF50+ and hats for everyone, especially baby.</li>
+        <li>Supermarkets charge for bags; bring reusable ones.</li>
+        <li>Emergency: dial <b>000</b>.</li>
+      </ul>
+    </div>
+
+    <div class="info-card">
+      <h3>📱 About this app</h3>
+      <ul>
+        <li>Edits, ticks and grocery items are saved on <b>this phone only</b>. Use "Share day" or "Share list" to send them to the family chat.</li>
+        <li>Tip: Add to Home Screen to open it like an app.</li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<!-- Bottom navigation -->
+<nav class="bottom">
+  <div class="inner">
+    <button id="nav-plan" class="active" onclick="showView('plan')"><span class="ico">📅</span>Plan</button>
+    <button id="nav-groceries" onclick="showView('groceries')"><span class="ico">🛒</span>Groceries</button>
+    <button id="nav-info" onclick="showView('info')"><span class="ico">ℹ️</span>Trip info</button>
   </div>
+</nav>
 
-  <script>
-    // AUTOMATIC CACHE KEY (Line 167)
-    const CURRENT_VERSION = "v4_restaurant_dinners";
+<!-- Add / edit sheet -->
+<dialog id="sheet">
+  <form class="sheet" method="dialog" onsubmit="saveEvent(event)">
+    <h3 id="sheetTitle">Add to day</h3>
+    <div class="two">
+      <div class="field"><label for="fTime">Time</label><input id="fTime" placeholder="10:00" required></div>
+      <div class="field"><label for="fType">Type</label><select id="fType"></select></div>
+    </div>
+    <div class="field"><label for="fTitle">What</label><input id="fTitle" placeholder="e.g. Beach walk" required></div>
+    <div class="field"><label for="fDesc">Notes</label><textarea id="fDesc" placeholder="Optional"></textarea></div>
+    <div class="field"><label for="fPlace">Place for Maps (optional)</label><input id="fPlace" placeholder="e.g. Glenelg Beach"></div>
+    <div class="sheet-btns">
+      <button type="button" class="big-btn light" onclick="closeSheet()">Cancel</button>
+      <button type="submit" class="big-btn">Save</button>
+    </div>
+    <div class="sheet-btns">
+      <button type="button" id="deleteBtn" class="big-btn btn-danger" onclick="deleteEvent()">Delete this item</button>
+    </div>
+  </form>
+</dialog>
 
-    if (localStorage.getItem('adelaide_app_version') !== CURRENT_VERSION) {
-      localStorage.removeItem('adelaide_itinerary');
-      localStorage.setItem('adelaide_app_version', CURRENT_VERSION);
+<div class="toast" id="toast"></div>
+
+<script>
+  // ============================================================
+  // When you change DEFAULT_DAYS below, bump PLAN_VERSION.
+  // Every phone will then load the new plan (replacing their local edits).
+  // ============================================================
+  const PLAN_VERSION = "v7_two_stays";
+  const GROCERY_VERSION = "v5";
+
+  const TYPES = {
+    activity: { label: "Activity", icon: "🌳" },
+    meal:     { label: "Meal",     icon: "🍽️" },
+    travel:   { label: "Travel",   icon: "🚗" },
+    rest:     { label: "Rest",     icon: "😴" },
+    optional: { label: "Optional", icon: "✨" }
+  };
+
+  const DEFAULT_DAYS = [
+    {
+      date: "2026-11-09", title: "Arrive & rest",
+      tip: "Rest day after the overnight flight. Nothing planned: sleep, eat, settle in.",
+      events: [
+        { time: "08:00", type: "travel", title: "Land in Adelaide (MH139)", desc: "Take it slow: bags, hire car, then drive straight to the stay (Marden is about 25 min).", place: "Adelaide Airport" },
+        { time: "09:30", type: "rest", title: "Settle in & sleep", desc: "Everyone rests after the overnight flight.", place: "17 Grigg Street, Marden SA 5070" },
+        { time: "11:00", type: "rest", title: "Groceries delivered", desc: "Book a Coles or Woolworths delivery for late morning, so nobody has to go out." },
+        { time: "18:30", type: "meal", title: "Easy dinner at home", desc: "Simple home meal or food delivery. Early night." }
+      ]
+    },
+    {
+      date: "2026-11-10", title: "Zoo & Botanic Garden",
+      tip: "Park once near the Zoo on Frome Rd. The Botanic Garden is right next door, so walk across with the pram.",
+      events: [
+        { time: "09:30", type: "activity", title: "Adelaide Zoo", desc: "Giant pandas Yi Lan & Xing Qiu, plus Nature's Playground.", place: "Adelaide Zoo" },
+        { time: "11:45", type: "activity", title: "Adelaide Botanic Garden", desc: "Pram-friendly walk and open lawns for baby.", place: "Adelaide Botanic Garden" },
+        { time: "12:30", type: "meal", title: "Peter Rabbit Cafe", desc: "Garden cafe with real bunnies.", place: "Peter Rabbit Adelaide" },
+        { time: "14:30", type: "rest", title: "Rest at home" },
+        { time: "18:30", type: "meal", title: "iTL Italian Kitchen (CBD)", desc: "Wood-fired pizzas & pasta in a spacious venue.", place: "iTL Italian Kitchen Adelaide" }
+      ]
+    },
+    {
+      date: "2026-11-11", title: "Adelaide Hills",
+      tip: "Get to Cleland at opening, before it gets busy. Mt Lofty Summit is 5 minutes up the road.",
+      events: [
+        { time: "09:30", type: "activity", title: "Cleland Wildlife Park", desc: "Feed kangaroos up close.", place: "Cleland Wildlife Park" },
+        { time: "11:30", type: "activity", title: "Mt Lofty Summit", desc: "Lookout over the whole city; easy paths near the car park.", place: "Mount Lofty Summit" },
+        { time: "12:45", type: "meal", title: "Grünthal Brew (Hahndorf)", desc: "Spacious lawn dining, then a stroll down Hahndorf's main street.", place: "Grunthal Brew Hahndorf" },
+        { time: "18:30", type: "meal", title: "Home dinner", desc: "Rest after the Hills day." }
+      ]
+    },
+    {
+      date: "2026-11-12", title: "Monarto Safari",
+      tip: "About 1 hour east, so leave by 8:30am. Book tickets online. A baby carrier makes the safari bus easier.",
+      events: [
+        { time: "09:30", type: "activity", title: "Monarto Safari Park", desc: "Open-range safari bus, giraffes & chimps.", place: "Monarto Safari Park" },
+        { time: "13:00", type: "meal", title: "Monarto Visitor Centre Cafe", desc: "Family-friendly cafe at the safari entrance.", place: "Monarto Safari Park" },
+        { time: "18:30", type: "meal", title: "The Rezz (Newton)", desc: "Dinner with a dedicated toddler soft-play area.", place: "The Rezz Newton" }
+      ]
+    },
+    {
+      date: "2026-11-13", title: "Market & east side",
+      tip: "The Grote St car park is cheapest before 10am. Friday is a good market day before the weekend rush.",
+      events: [
+        { time: "09:00", type: "meal", title: "Adelaide Central Market", desc: "Breakfast, coffee, and top up fresh food for the week.", place: "Adelaide Central Market" },
+        { time: "10:45", type: "activity", title: "Tusmore Park Wading Pool", desc: "Shaded playground & shallow wading pool.", place: "Tusmore Park" },
+        { time: "12:30", type: "meal", title: "Norwood Parade cafe", desc: "Relaxed outdoor cafe lunch.", place: "The Parade Norwood" },
+        { time: "14:00", type: "rest", title: "Rest at home" },
+        { time: "18:30", type: "meal", title: "Tony Tomatoes (North Adelaide)", desc: "Family-loved Italian pizzeria; stroll O'Connell St after.", place: "Tony Tomatoes North Adelaide" }
+      ]
+    },
+    {
+      date: "2026-11-14", title: "McLaren Vale & Glenelg",
+      tip: "Last full day. Glenelg is on the way back from McLaren Vale. Pack tonight, since the return flight leaves at 10:45am tomorrow.",
+      events: [
+        { time: "10:00", type: "travel", title: "McLaren Vale scenic drive", desc: "Vineyards and coast, about 45 min south.", place: "McLaren Vale" },
+        { time: "12:00", type: "meal", title: "Beach Road Wines", desc: "Pizzas & grassy lawns for toddler play.", place: "Beach Road Wines" },
+        { time: "15:00", type: "activity", title: "Glenelg Foreshore", desc: "Short flat stroll, fenced playground on the sand, benches to sit and watch the sea.", place: "Glenelg Foreshore Playground" },
+        { time: "18:00", type: "meal", title: "Henley House / Estia (Henley Beach)", desc: "Farewell coastal sunset dinner, 15 min from Glenelg.", place: "Henley Square Henley Beach" },
+        { time: "20:00", type: "rest", title: "Pack bags", desc: "Leave out only what's needed for the morning." }
+      ]
+    },
+    {
+      date: "2026-11-15", title: "Fly home",
+      tip: "Aim to be at the airport by 7:45am, three hours before the 10:45am flight.",
+      events: [
+        { time: "07:00", type: "travel", title: "Leave & return hire car", desc: "Allow about 25 min from Marden to the airport, plus time to return the car." },
+        { time: "07:45", type: "travel", title: "Arrive at Adelaide Airport", desc: "Check in, then breakfast at the airport.", place: "Adelaide Airport" },
+        { time: "10:45", type: "travel", title: "MH138 departs", desc: "Lands in KL at 16:00. Safe flight home!" }
+      ]
     }
+  ];
 
-    // View Switcher
-    function showView(view) {
-      document.getElementById('itinerarySection').style.display = view === 'itinerary' ? 'block' : 'none';
-      document.getElementById('grocerySection').style.display = view === 'grocery' ? 'block' : 'none';
-      
-      document.getElementById('navItineraryBtn').classList.toggle('active', view === 'itinerary');
-      document.getElementById('navGroceryBtn').classList.toggle('active', view === 'grocery');
+  const GROCERY_CATS = [
+    { key: "Baby", icon: "👶" },
+    { key: "Breakfast", icon: "🥛" },
+    { key: "Produce", icon: "🍌" },
+    { key: "Dinner Cook", icon: "🍳" },
+    { key: "Snacks & Drinks", icon: "🧃" },
+    { key: "Toiletries & Home", icon: "🧴" },
+    { key: "Road Trip", icon: "🚗" }
+  ];
+
+  const DEFAULT_GROCERIES = [
+    ["Full cream milk (baby)", "Baby"], ["Baby pouches", "Baby"], ["Nappies", "Baby"], ["Baby wipes", "Baby"],
+    ["Eggs (12-pack)", "Breakfast"], ["Sourdough bread", "Breakfast"], ["Butter", "Breakfast"], ["Greek yoghurt", "Breakfast"],
+    ["Granola / muesli", "Breakfast"], ["Coffee & tea bags", "Breakfast"], ["Jam / honey", "Breakfast"],
+    ["Bananas & apples", "Produce"], ["Berries", "Produce"], ["Avocados", "Produce"], ["Tomatoes", "Produce"],
+    ["Salad mix", "Produce"], ["Cucumber", "Produce"], ["Lemons", "Produce"],
+    ["Rotisserie chicken (buy on the day)", "Dinner Cook"], ["Steak or chicken", "Dinner Cook"], ["Sausages", "Dinner Cook"],
+    ["Pasta + sauce", "Dinner Cook"], ["Wraps", "Dinner Cook"], ["Olive oil (small)", "Dinner Cook"], ["Salt & pepper", "Dinner Cook"],
+    ["Crackers & cheese", "Snacks & Drinks"], ["Haigh's chocolate", "Snacks & Drinks"], ["Bottled water", "Snacks & Drinks"], ["Juice", "Snacks & Drinks"],
+    ["Sunscreen SPF50+", "Toiletries & Home"], ["Insect repellent", "Toiletries & Home"], ["Dishwashing liquid & sponge", "Toiletries & Home"],
+    ["Bin bags", "Toiletries & Home"], ["Ziplock bags", "Toiletries & Home"], ["Reusable shopping bags", "Toiletries & Home"],
+    ["Cooler bag", "Road Trip"], ["Car snacks", "Road Trip"]
+  ];
+
+  // ---------- storage helpers ----------
+  function load(key, fallback) {
+    try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; } catch (e) { return fallback; }
+  }
+  function save(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+  const clone = (x) => JSON.parse(JSON.stringify(x));
+  let nextId = Date.now();
+  const withIds = (days) => days.map(d => ({ ...d, events: d.events.map(e => ({ id: nextId++, done: false, ...e })) }));
+
+  function loadPlan() {
+    const stored = load("adl_plan", null);
+    if (stored && stored.version === PLAN_VERSION) return stored.days;
+    return withIds(clone(DEFAULT_DAYS));
+  }
+  function loadGroceries() {
+    const stored = load("adl_groceries", null);
+    if (stored && stored.version === GROCERY_VERSION) return stored.items;
+    return DEFAULT_GROCERIES.map(([name, category]) => ({ id: nextId++, name, category, bought: false }));
+  }
+
+  let days = loadPlan();
+  let groceries = loadGroceries();
+  const savePlan = () => save("adl_plan", { version: PLAN_VERSION, days });
+  const saveGroceries = () => save("adl_groceries", { version: GROCERY_VERSION, items: groceries });
+  savePlan(); saveGroceries();
+
+  // ---------- utils ----------
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const mapsUrl = (q) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q + ", South Australia");
+  const parseDate = (iso) => { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d); };
+  const fmt = (iso, opts) => parseDate(iso).toLocaleDateString("en-AU", opts);
+  const todayIso = () => { const t = new Date(); return [t.getFullYear(), String(t.getMonth() + 1).padStart(2, "0"), String(t.getDate()).padStart(2, "0")].join("-"); };
+  const timeKey = (t) => { const m = String(t).match(/(\d{1,2})[:.]?(\d{2})?\s*(am|pm)?/i); if (!m) return 9999; let h = +m[1]; const min = +(m[2] || 0); const ap = (m[3] || "").toLowerCase(); if (ap === "pm" && h < 12) h += 12; if (ap === "am" && h === 12) h = 0; return h * 60 + min; };
+
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg; el.classList.add("show");
+    clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove("show"), 1800);
+  }
+
+  async function shareText(text) {
+    if (navigator.share) {
+      try { await navigator.share({ text }); return; } catch (e) { if (e.name === "AbortError") return; }
     }
+    window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
+  }
 
-    // Default 9-Day Itinerary
-    const defaultItinerary = [
-      {
-        date: "Nov 8 (Sun)",
-        events: [
-          { id: 1, time: "Morning / Afternoon", type: "Arrival", tag: "tag-arrival", title: "Arrive in Adelaide", desc: "Settle into home, unpack, let baby explore the space." },
-          { id: 2, time: "7:00 PM", type: "Dinner", tag: "tag-evening", title: "Welcome Home Dinner", desc: "Casual family meal cooked at home." }
-        ]
-      },
-      {
-        date: "Nov 9 (Mon)",
-        events: [
-          { id: 3, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Botanic Garden", desc: "Pram-friendly walk & open lawn play for baby.", map: "https://maps.google.com/?q=Adelaide+Botanic+Garden" },
-          { id: 4, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Peter Rabbit Cafe", desc: "Garden cafe with real bunnies.", map: "https://maps.google.com/?q=Peter+Rabbit+Adelaide" },
-          { id: 5, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Relaxed family meal at home." }
-        ]
-      },
-      {
-        date: "Nov 10 (Tue)",
-        events: [
-          { id: 6, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Adelaide Zoo", desc: "Nature's Playground & giant pandas.", map: "https://maps.google.com/?q=Adelaide+Zoo" },
-          { id: 7, time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "Central Market Food Stalls", desc: "Explore local food stalls & fresh produce.", map: "https://maps.google.com/?q=Adelaide+Central+Market" },
-          { id: 8, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "iTL Italian Kitchen (CBD)", desc: "Wood-fired pizzas & pasta in a spacious venue.", map: "https://maps.google.com/?q=iTL+Italian+Kitchen+Adelaide" }
-        ]
-      },
-      {
-        date: "Nov 11 (Wed)",
-        events: [
-          { id: 9, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Cleland Wildlife Park", desc: "Feed kangaroos up close in Adelaide Hills.", map: "https://maps.google.com/?q=Cleland+Wildlife+Park" },
-          { id: 10, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Grünthal Brew (Hahndorf)", desc: "Spacious lawn dining for the family.", map: "https://maps.google.com/?q=Grunthal+Brew" },
-          { id: 11, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Rest time after Adelaide Hills day." }
-        ]
-      },
-      {
-        date: "Nov 12 (Thu)",
-        events: [
-          { id: 12, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Monarto Safari Park", desc: "Open-range safari bus, giraffes & chimps.", map: "https://maps.google.com/?q=Monarto+Safari+Park" },
-          { id: 13, time: "1:00 PM", type: "Lunch", tag: "tag-lunch", title: "Monarto Visitor Centre Cafe", desc: "Family-friendly cafe at safari entrance.", map: "https://maps.google.com/?q=Monarto+Safari+Park" },
-          { id: 14, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "The Rezz (Newton)", desc: "Dinner with dedicated toddler indoor soft play area.", map: "https://maps.google.com/?q=The+Rezz+Newton" }
-        ]
-      },
-      {
-        date: "Nov 13 (Fri)",
-        events: [
-          { id: 15, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Tusmore Park Wading Pool", desc: "Shaded playground & shallow wading pool.", map: "https://maps.google.com/?q=Tusmore+Park" },
-          { id: 16, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Norwood Parade Cafe", desc: "Relaxed outdoor cafe dining.", map: "https://maps.google.com/?q=Norwood+Parade+Adelaide" },
-          { id: 17, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Tony Tomatoes (North Adelaide)", desc: "High-vibe, family-loved Italian pizzeria.", map: "https://maps.google.com/?q=Tony+Tomatoes+North+Adelaide" }
-        ]
-      },
-      {
-        date: "Nov 14 (Sat)",
-        events: [
-          { id: 18, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "McLaren Vale Scenic Drive", desc: "Vineyards and coast drive.", map: "https://maps.google.com/?q=McLaren+Vale" },
-          { id: 19, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Beach Road Wines", desc: "Pizzas & grassy lawns for toddler play.", map: "https://maps.google.com/?q=Beach+Road+Wines" },
-          { id: 20, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Home Dinner", desc: "Relaxing meal at home after winery trip." }
-        ]
-      },
-      {
-        date: "Nov 15 (Sun)",
-        events: [
-          { id: 21, time: "9:30 AM", type: "Activity", tag: "tag-morning", title: "Glenelg Foreshore & Beach", desc: "Fenced foreshore playground on the sand.", map: "https://maps.google.com/?q=Glenelg+Beach" },
-          { id: 22, time: "12:30 PM", type: "Lunch", tag: "tag-lunch", title: "Moseley Square Cafe", desc: "Beachside lunch with ocean views.", map: "https://maps.google.com/?q=Moseley+Square+Glenelg" },
-          { id: 23, time: "6:30 PM", type: "Dinner", tag: "tag-evening", title: "Henley House / Estia (Henley Beach)", desc: "Farewell coastal sunset dinner.", map: "https://maps.google.com/?q=Henley+House+Henley+Beach" }
-        ]
-      },
-      {
-        date: "Nov 16 (Mon)",
-        events: [
-          { id: 24, time: "Morning", type: "Activity", tag: "tag-morning", title: "Final Morning Coffee & Departure", desc: "Pack up, return rental car, head to Adelaide Airport." },
-          { id: 25, time: "12:00 PM", type: "Lunch", tag: "tag-lunch", title: "Airport Lunch & Flight Home", desc: "Safe flight back home!" }
-        ]
-      }
-    ];
+  // ---------- views ----------
+  function showView(name) {
+    ["plan", "groceries", "info"].forEach(v => {
+      document.getElementById("view-" + v).classList.toggle("hidden", v !== name);
+      document.getElementById("nav-" + v).classList.toggle("active", v === name);
+    });
+    window.scrollTo({ top: 0 });
+  }
 
-    let itinerary = JSON.parse(localStorage.getItem('adelaide_itinerary')) || defaultItinerary;
-    let currentDayIndex = 0;
-    let isEditMode = false;
+  function renderCountdown() {
+    const el = document.getElementById("countdown");
+    const today = parseDate(todayIso());
+    const start = parseDate(days[0].date), end = parseDate(days[days.length - 1].date);
+    const diff = Math.round((start - today) / 86400000);
+    if (diff > 1) el.textContent = `✈️ ${diff} days to go`;
+    else if (diff === 1) el.textContent = "✈️ Fly out tonight!";
+    else if (today <= end) el.textContent = `📍 Day ${Math.round((today - start) / 86400000) + 1} of ${days.length}`;
+    else el.textContent = "🏡 Hope you had a great trip!";
+  }
 
-    function saveToLocalStorage() {
-      localStorage.setItem('adelaide_itinerary', JSON.stringify(itinerary));
-    }
+  // ---------- plan ----------
+  let current = 0;
 
-    function renderTabs() {
-      const tabsContainer = document.getElementById('dayTabs');
-      tabsContainer.innerHTML = '';
-      itinerary.forEach((item, index) => {
-        const btn = document.createElement('button');
-        btn.className = `tab-btn ${index === currentDayIndex ? 'active' : ''}`;
-        btn.innerText = item.date;
-        btn.onclick = () => selectDay(index);
-        tabsContainer.appendChild(btn);
-      });
-    }
+  function renderTabs() {
+    const wrap = document.getElementById("dayTabs");
+    const t = todayIso();
+    wrap.innerHTML = days.map((d, i) => `
+      <button class="day-btn ${i === current ? "active" : ""} ${d.date === t ? "today" : ""}" onclick="selectDay(${i})">
+        <span class="dow">${esc(fmt(d.date, { weekday: "short" }))}</span>
+        <span class="dnum">${esc(fmt(d.date, { day: "numeric" }))}</span>
+      </button>`).join("");
+    const active = wrap.children[current];
+    if (active) active.scrollIntoView({ block: "nearest", inline: "center" });
+  }
 
-    function selectDay(index) {
-      currentDayIndex = index;
-      renderTabs();
-
-      const contentContainer = document.getElementById('dayContent');
-      contentContainer.innerHTML = '';
-
-      if (itinerary[index].events.length === 0) {
-        contentContainer.innerHTML = '<p style="text-align:center; opacity:0.7;">No activities planned for this day yet.</p>';
-        return;
-      }
-
-      itinerary[index].events.forEach((evt, evtIndex) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <div class="card-header">
-            <strong>${evt.time}</strong>
-            <span class="tag ${evt.tag || 'tag-morning'}">${evt.type}</span>
-          </div>
-          <h3 style="margin:4px 0;">${evt.title}</h3>
-          <p style="margin:4px 0; font-size:0.9rem;">${evt.desc}</p>
-          ${evt.map ? `<a href="${evt.map}" target="_blank" class="map-btn">Open in Maps 📍</a>` : ''}
-          <div class="card-actions">
-            <button class="btn-card btn-card-edit" onclick="editEvent(${evtIndex})">Edit</button>
-            <button class="btn-card btn-delete" onclick="deleteEvent(${evtIndex})">Delete</button>
-          </div>
-        `;
-        contentContainer.appendChild(card);
-      });
-    }
-
-    function toggleEditMode() {
-      isEditMode = !isEditMode;
-      document.body.classList.toggle('edit-mode', isEditMode);
-      document.getElementById('toggleEditBtn').innerText = isEditMode ? "💾 Done Editing" : "✏️ Edit Itinerary";
-    }
-
-    function addNewEvent() {
-      const time = prompt("Enter Time (e.g. 10:00 AM):", "10:00 AM");
-      if (!time) return;
-      const title = prompt("Enter Title (e.g. Beach Walk):", "New Activity");
-      if (!title) return;
-      const desc = prompt("Enter Description:", "Details here...");
-      const map = prompt("Enter Google Maps Link (optional):", "");
-
-      itinerary[currentDayIndex].events.push({
-        id: Date.now(),
-        time: time,
-        type: "Activity",
-        tag: "tag-morning",
-        title: title,
-        desc: desc || "",
-        map: map || ""
-      });
-
-      saveToLocalStorage();
-      selectDay(currentDayIndex);
-    }
-
-    function editEvent(evtIndex) {
-      const evt = itinerary[currentDayIndex].events[evtIndex];
-      const newTitle = prompt("Edit Title:", evt.title);
-      if (newTitle === null) return;
-      const newTime = prompt("Edit Time:", evt.time);
-      const newDesc = prompt("Edit Description:", evt.desc);
-      const newMap = prompt("Edit Maps Link:", evt.map || "");
-
-      evt.title = newTitle;
-      evt.time = newTime || evt.time;
-      evt.desc = newDesc || "";
-      evt.map = newMap || "";
-
-      saveToLocalStorage();
-      selectDay(currentDayIndex);
-    }
-
-    function deleteEvent(evtIndex) {
-      if (confirm("Are you sure you want to delete this item?")) {
-        itinerary[currentDayIndex].events.splice(evtIndex, 1);
-        saveToLocalStorage();
-        selectDay(currentDayIndex);
-      }
-    }
-
-    function resetToDefault() {
-      if (confirm("Reset itinerary back to the latest schedule?")) {
-        itinerary = JSON.parse(JSON.stringify(defaultItinerary));
-        saveToLocalStorage();
-        selectDay(0);
-      }
-    }
-
-    // Grocery List Data & Logic
-    let groceryItems = JSON.parse(localStorage.getItem('adelaide_groceries')) || [
-      { id: 1, name: "Full Cream Milk (Baby)", category: "Breakfast", bought: false },
-      { id: 2, name: "Eggs (12-pack)", category: "Breakfast", bought: false },
-      { id: 3, name: "Bananas & Apples", category: "Produce", bought: false },
-      { id: 4, name: "Sourdough Bread", category: "Breakfast", bought: true }
-    ];
-
-    function saveGroceries() {
-      localStorage.setItem('adelaide_groceries', JSON.stringify(groceryItems));
-      renderGroceries();
-    }
-
-    function renderGroceries() {
-      const container = document.getElementById('groceryListContainer');
-      container.innerHTML = '';
-
-      const categories = ["Breakfast", "Produce", "Dinner Cook", "Baby Snacks"];
-
-      categories.forEach(cat => {
-        const catItems = groceryItems.filter(item => item.category === cat);
-        if (catItems.length === 0) return;
-
-        const catHeader = document.createElement('h4');
-        catHeader.style.cssText = "margin: 14px 0 6px 0; color: #2C5E3B; font-size: 0.85rem; text-transform: uppercase;";
-        catHeader.innerText = cat;
-        container.appendChild(catHeader);
-
-        catItems.forEach(item => {
-          const row = document.createElement('div');
-          row.className = 'grocery-item-row';
-          if (item.bought) row.style.opacity = '0.5';
-
-          row.innerHTML = `
-            <label style="display:flex; align-items:center; gap:10px; flex:1; cursor:pointer;">
-              <input type="checkbox" ${item.bought ? 'checked' : ''} onchange="toggleBought(${item.id})" style="width:18px; height:18px;">
-              <span style="${item.bought ? 'text-decoration:line-through;' : 'font-weight:500;'}">${item.name}</span>
-            </label>
-            <button onclick="deleteGrocery(${item.id})" style="background:none; border:none; color:#d32f2f; cursor:pointer; font-size:1rem;">✕</button>
-          `;
-          container.appendChild(row);
-        });
-      });
-    }
-
-    function addGroceryItem() {
-      const nameInput = document.getElementById('newItemInput');
-      const catSelect = document.getElementById('itemCategory');
-      if (!nameInput.value.trim()) return;
-
-      groceryItems.push({
-        id: Date.now(),
-        name: nameInput.value.trim(),
-        category: catSelect.value,
-        bought: false
-      });
-
-      nameInput.value = '';
-      saveGroceries();
-    }
-
-    function quickAdd(name, category) {
-      groceryItems.push({ id: Date.now(), name, category, bought: false });
-      saveGroceries();
-    }
-
-    function toggleBought(id) {
-      const item = groceryItems.find(i => i.id === id);
-      if (item) item.bought = !item.bought;
-      saveGroceries();
-    }
-
-    function deleteGrocery(id) {
-      groceryItems = groceryItems.filter(i => i.id !== id);
-      saveGroceries();
-    }
-
-    // Initialize App
+  function selectDay(i) {
+    current = i;
     renderTabs();
-    selectDay(0);
-    renderGroceries();
-  </script>
+    const d = days[i];
+    d.events.sort((a, b) => timeKey(a.time) - timeKey(b.time));
+    const cards = d.events.map(e => {
+      const t = TYPES[e.type] || TYPES.activity;
+      return `
+      <div class="card ${e.done ? "done" : ""}">
+        <button class="check" aria-label="Mark done" onclick="toggleDone(${e.id})">${e.done ? "✓" : ""}</button>
+        <div class="ev-body">
+          <div class="ev-meta"><span>${esc(e.time)}</span><span class="pill t-${esc(e.type)}">${t.icon} ${t.label}</span></div>
+          <div class="ev-title">${esc(e.title)}</div>
+          ${e.desc ? `<p class="ev-desc">${esc(e.desc)}</p>` : ""}
+          <div class="ev-actions">
+            ${e.place ? `<a class="link-btn" href="${mapsUrl(e.place)}" target="_blank" rel="noopener">📍 Maps</a>` : ""}
+            <button class="link-btn ghost" onclick="openSheet(${e.id})">Edit</button>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+    document.getElementById("dayContent").innerHTML = `
+      <div class="day-head">
+        <div><h2>Day ${i + 1} · ${esc(d.title)}</h2><div class="date">${esc(fmt(d.date, { weekday: "long", day: "numeric", month: "long" }))}</div></div>
+      </div>
+      ${d.tip ? `<div class="tip"><b>Tip:</b> ${esc(d.tip)}</div>` : ""}
+      ${cards || `<p style="text-align:center;color:var(--muted)">Nothing planned yet. Tap “Add to this day”.</p>`}`;
+  }
+
+  function findEvent(id) { return days[current].events.find(e => e.id === id); }
+
+  function toggleDone(id) {
+    const e = findEvent(id); if (!e) return;
+    e.done = !e.done; savePlan(); selectDay(current);
+  }
+
+  let editingId = null;
+  function openSheet(id) {
+    editingId = id ?? null;
+    const e = id != null ? findEvent(id) : null;
+    document.getElementById("sheetTitle").textContent = e ? "Edit item" : "Add to " + fmt(days[current].date, { weekday: "short", day: "numeric", month: "short" });
+    document.getElementById("fTime").value = e ? e.time : "";
+    document.getElementById("fType").value = e ? e.type : "activity";
+    document.getElementById("fTitle").value = e ? e.title : "";
+    document.getElementById("fDesc").value = e ? (e.desc || "") : "";
+    document.getElementById("fPlace").value = e ? (e.place || "") : "";
+    document.getElementById("deleteBtn").classList.toggle("hidden", !e);
+    document.getElementById("sheet").showModal();
+  }
+  function closeSheet() { document.getElementById("sheet").close(); }
+
+  function saveEvent(ev) {
+    ev.preventDefault();
+    const data = {
+      time: document.getElementById("fTime").value.trim(),
+      type: document.getElementById("fType").value,
+      title: document.getElementById("fTitle").value.trim(),
+      desc: document.getElementById("fDesc").value.trim(),
+      place: document.getElementById("fPlace").value.trim()
+    };
+    if (!data.time || !data.title) return;
+    if (editingId != null) Object.assign(findEvent(editingId), data);
+    else days[current].events.push({ id: nextId++, done: false, ...data });
+    savePlan(); closeSheet(); selectDay(current); toast("Saved");
+  }
+
+  function deleteEvent() {
+    if (editingId == null || !confirm("Delete this item?")) return;
+    days[current].events = days[current].events.filter(e => e.id !== editingId);
+    savePlan(); closeSheet(); selectDay(current); toast("Deleted");
+  }
+
+  function resetPlan() {
+    if (!confirm("Reset the plan to the latest version? Your edits and ticks on this phone will be lost.")) return;
+    days = withIds(clone(DEFAULT_DAYS)); savePlan(); selectDay(current); toast("Plan reset");
+  }
+
+  function shareDay() {
+    const d = days[current];
+    const lines = [`*Day ${current + 1} · ${d.title}*`, `_${fmt(d.date, { weekday: "long", day: "numeric", month: "long" })}_`, ""];
+    d.events.forEach(e => {
+      const t = TYPES[e.type] || TYPES.activity;
+      lines.push(`${t.icon} *${e.time}* ${e.title}`);
+      if (e.desc) lines.push(`   ${e.desc}`);
+    });
+    if (d.tip) lines.push("", `💡 _${d.tip}_`);
+    shareText(lines.join("\n"));
+  }
+
+  // ---------- groceries ----------
+  function renderGroceries() {
+    const hide = document.getElementById("hideBought").checked;
+    const total = groceries.length, got = groceries.filter(g => g.bought).length;
+    document.getElementById("gProgress").style.width = total ? (got / total * 100) + "%" : "0";
+    document.getElementById("gCount").textContent = `${got} of ${total} bought`;
+    document.getElementById("gLeft").textContent = total - got ? `${total - got} to go` : "All done 🎉";
+
+    document.getElementById("gList").innerHTML = GROCERY_CATS.map(c => {
+      const all = groceries.filter(g => g.category === c.key);
+      const items = hide ? all.filter(g => !g.bought) : all;
+      if (!items.length) return "";
+      const left = all.filter(g => !g.bought).length;
+      return `<div class="cat-head"><span>${c.icon} ${esc(c.key)}</span><span>${left} left</span></div>` +
+        items.map(g => `
+          <div class="g-item ${g.bought ? "bought" : ""}" onclick="toggleBought(${g.id})">
+            <span class="g-box">${g.bought ? "✓" : ""}</span>
+            <span class="g-name">${esc(g.name)}</span>
+            <button class="g-del" aria-label="Remove" onclick="event.stopPropagation(); deleteGrocery(${g.id})">✕</button>
+          </div>`).join("");
+    }).join("");
+  }
+
+  function addGrocery(ev) {
+    ev.preventDefault();
+    const input = document.getElementById("gInput");
+    const name = input.value.trim(); if (!name) return;
+    groceries.push({ id: nextId++, name, category: document.getElementById("gCat").value, bought: false });
+    input.value = ""; saveGroceries(); renderGroceries(); toast("Added " + name);
+  }
+  function toggleBought(id) { const g = groceries.find(x => x.id === id); if (g) { g.bought = !g.bought; saveGroceries(); renderGroceries(); } }
+  function deleteGrocery(id) { groceries = groceries.filter(g => g.id !== id); saveGroceries(); renderGroceries(); }
+  function clearBought() {
+    const n = groceries.filter(g => g.bought).length;
+    if (!n) return toast("Nothing ticked yet");
+    if (!confirm(`Remove ${n} bought item(s) from the list?`)) return;
+    groceries = groceries.filter(g => !g.bought); saveGroceries(); renderGroceries();
+  }
+  function shareGroceries() {
+    const lines = ["*🛒 Adelaide grocery list*", ""];
+    GROCERY_CATS.forEach(c => {
+      const items = groceries.filter(g => g.category === c.key && !g.bought);
+      if (!items.length) return;
+      lines.push(`*${c.icon} ${c.key}*`);
+      items.forEach(g => lines.push(`☐ ${g.name}`));
+      lines.push("");
+    });
+    shareText(lines.join("\n").trim());
+  }
+
+  // ---------- init ----------
+  document.getElementById("gCat").innerHTML = GROCERY_CATS.map(c => `<option value="${esc(c.key)}">${c.icon} ${esc(c.key)}</option>`).join("");
+  document.getElementById("fType").innerHTML = Object.entries(TYPES).map(([k, t]) => `<option value="${k}">${t.icon} ${t.label}</option>`).join("");
+  const todayIdx = days.findIndex(d => d.date === todayIso());
+  current = todayIdx >= 0 ? todayIdx : 0;
+  renderCountdown();
+  selectDay(current);
+  renderGroceries();
+</script>
 </body>
 </html>
